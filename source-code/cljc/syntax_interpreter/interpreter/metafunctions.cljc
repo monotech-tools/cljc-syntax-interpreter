@@ -340,13 +340,13 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns the tag's name that starts at the actual cursor position (if any).
   ;
   ; @return (keyword)
-  (fn [] (letfn [(f [%] (-> % :starts-at (= cursor)))]
-                (-> (vector/last-match actual-tags f) :name))))
+  (fn [] (letfn [(f [%] (-> % :starts-at (= (:cursor @state))))]
+                (-> (vector/last-match (:actual-tags @state) f) :name))))
 
 (defn opening-tag-f
   ; @ignore
@@ -362,13 +362,13 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns the tag's name that opens at the actual cursor position (if any).
   ;
   ; @return (keyword)
-  (fn [] (letfn [(f [%] (-> % :opens-at (= cursor)))]
-                (-> (vector/last-match actual-tags f) :name))))
+  (fn [] (letfn [(f [%] (-> % :opens-at (= (:cursor @state))))]
+                (-> (vector/last-match (:actual-tags @state) f) :name))))
 
 (defn closing-tag-f
   ; @ignore
@@ -384,13 +384,13 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns the tag's name that closes at the actual cursor position (if any).
   ;
   ; @return (keyword)
-  (fn [] (letfn [(f [%] (-> % :closes-at (= cursor)))]
-                (-> (vector/last-match actual-tags f) :name))))
+  (fn [] (letfn [(f [%] (-> % :closes-at (= (:cursor @state))))]
+                (-> (vector/last-match (:actual-tags @state) f) :name))))
 
 (defn ending-tag-f
   ; @ignore
@@ -406,13 +406,13 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns the tag's name that ends at the actual cursor position (if any).
   ;
   ; @return (keyword)
-  (fn [] (letfn [(f [%] (-> % :ends-at (= cursor)))]
-                (-> (vector/last-match actual-tags f) :name))))
+  (fn [] (letfn [(f [%] (-> % :ends-at (= (:cursor @state))))]
+                (-> (vector/last-match (:actual-tags @state) f) :name))))
 
 (defn tag-starts-f
   ; @ignore
@@ -428,7 +428,7 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns TRUE if the given tag's opening pattern's match starts at the actual cursor position.
   ;
@@ -436,8 +436,8 @@
   ;
   ; @return (boolean)
   (fn [tag-name] (letfn [(f [%] (and (-> % :name      (= tag-name))
-                                     (-> % :starts-at (= cursor))))]
-                        (vector/any-item-matches? actual-tags f))))
+                                     (-> % :starts-at (= (:cursor @state)))))]
+                        (vector/any-item-matches? (:actual-tags @state) f))))
 
 (defn tag-started-f
   ; @ignore
@@ -453,7 +453,7 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns TRUE if the given tag is started.
   ;
@@ -461,9 +461,9 @@
   ;
   ; @return (boolean)
   (fn [tag-name] (letfn [(f [%] (and (-> % :name (= tag-name))
-                                     (or (-> % :starts-at (= cursor))
+                                     (or (-> % :starts-at (= (:cursor @state)))
                                          (-> % :started-at integer?))))]
-                        (vector/any-item-matches? actual-tags f))))
+                        (vector/any-item-matches? (:actual-tags @state) f))))
 
 (defn tag-started-at-f
   ; @ignore
@@ -478,7 +478,7 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags]}]
+  [_ _ _ state]
   ; @description
   ; Returns the starting position of the given tag.
   ;
@@ -488,7 +488,7 @@
   (fn [tag-name] (letfn [(f [%] (and (-> % :name (= tag-name))
                                      (or (-> % :starts-at)
                                          (-> % :started-at))))]
-                        (some f actual-tags))))
+                        (some f (:actual-tags @state)))))
 
 (defn tag-opens-f
   ; @ignore
@@ -504,7 +504,7 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns TRUE if the given tag's opening pattern's match ends at the actual cursor position.
   ;
@@ -512,8 +512,8 @@
   ;
   ; @return (boolean)
   (fn [tag-name] (letfn [(f [%] (and (-> % :name     (= tag-name))
-                                     (-> % :opens-at (= cursor))))]
-                        (vector/any-item-matches? actual-tags f))))
+                                     (-> % :opens-at (= (:cursor @state)))))]
+                        (vector/any-item-matches? (:actual-tags @state) f))))
 
 (defn tag-opened-f
   ; @ignore
@@ -529,7 +529,7 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns TRUE if the given tag is opened.
   ;
@@ -537,10 +537,10 @@
   ;
   ; @return (boolean)
   (fn [tag-name] (letfn [(f [%] (and (-> % :name (= tag-name))
-                                     (or (-> % :opens-at (= cursor))
+                                     (or (-> % :opens-at (= (:cursor @state)))
                                          (-> % :opened-at integer?))
                                      (-> % :closed-at not)))]
-                        (vector/any-item-matches? actual-tags f))))
+                        (vector/any-item-matches? (:actual-tags @state) f))))
 
 (defn tag-opened-at-f
   ; @ignore
@@ -555,7 +555,7 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags]}]
+  [_ _ _ state]
   ; @description
   ; Returns the opening position of the given tag.
   ;
@@ -565,7 +565,7 @@
   (fn [tag-name] (letfn [(f [%] (and (-> % :name (= tag-name))
                                      (or (-> % :opens-at)
                                          (-> % :opened-at))))]
-                        (some f actual-tags))))
+                        (some f (:actual-tags @state)))))
 
 (defn tag-closes-f
   ; @ignore
@@ -581,7 +581,7 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns TRUE if the given tag's closing pattern's match starts at the actual cursor position.
   ;
@@ -589,8 +589,8 @@
   ;
   ; @return (boolean)
   (fn [tag-name] (letfn [(f [%] (and (-> % :name      (= tag-name))
-                                     (-> % :closes-at (= cursor))))]
-                        (vector/any-item-matches? actual-tags f))))
+                                     (-> % :closes-at (= (:cursor @state)))))]
+                        (vector/any-item-matches? (:actual-tags @state) f))))
 
 (defn tag-closed-f
   ; @ignore
@@ -606,7 +606,7 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns TRUE if the given tag is closed.
   ;
@@ -614,9 +614,9 @@
   ;
   ; @return (boolean)
   (fn [tag-name] (letfn [(f [%] (and (-> % :name (= tag-name))
-                                     (or (-> % :closes-at (= cursor))
+                                     (or (-> % :closes-at (= (:cursor @state)))
                                          (-> % :closed-at integer?))))]
-                        (vector/any-item-matches? actual-tags f))))
+                        (vector/any-item-matches? (:actual-tags @state) f))))
 
 (defn tag-closed-at-f
   ; @ignore
@@ -631,7 +631,7 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags]}]
+  [_ _ _ state]
   ; @description
   ; Returns the closing position of the given tag.
   ;
@@ -641,7 +641,7 @@
   (fn [tag-name] (letfn [(f [%] (and (-> % :name (= tag-name))
                                      (or (-> % :closes-at)
                                          (-> % :closed-at))))]
-                        (some f actual-tags))))
+                        (some f (:actual-tags @state)))))
 
 (defn tag-ends-f
   ; @ignore
@@ -657,7 +657,7 @@
   ;  :cursor (integer)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags cursor]}]
+  [_ _ _ state]
   ; @description
   ; Returns TRUE if the given tag's closing pattern's match ends at the actual cursor position.
   ;
@@ -665,8 +665,8 @@
   ;
   ; @return (boolean)
   (fn [tag-name] (letfn [(f [%] (and (-> % :name    (= tag-name))
-                                     (-> % :ends-at (= cursor))))]
-                        (vector/any-item-matches? actual-tags f))))
+                                     (-> % :ends-at (= (:cursor @state)))))]
+                        (vector/any-item-matches? (:actual-tags @state) f))))
 
 ;; -- Tag body / content metafunctions ----------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -684,7 +684,7 @@
   ; {:cursor (integer)}
   ;
   ; @return (function)
-  [n tags options {:keys [cursor] :as state}]
+  [n tags options state]
   ; @description
   ; Returns a specific part of the 'n' string from the starting position of the given tag to the actual cursor position.
   ;
@@ -693,7 +693,7 @@
   ; @return (string)
   (fn [tag-name] (if ((tag-started-f n tags options state) tag-name)
                      (let [tag-started-at ((tag-started-at-f n tags options state) tag-name)]
-                          (string/keep-range n tag-started-at cursor)))))
+                          (string/keep-range n tag-started-at (:cursor @state))))))
 
 (defn tag-content-f
   ; @ignore
@@ -708,7 +708,7 @@
   ; {:cursor (integer)}
   ;
   ; @return (function)
-  [n tags options {:keys [cursor] :as state}]
+  [n tags options state]
   ; @description
   ; Returns a specific part of the 'n' string from the opening position of the given tag to the actual cursor position.
   ;
@@ -717,7 +717,7 @@
   ; @return (string)
   (fn [tag-name] (if ((tag-opened-f n tags options state) tag-name)
                      (let [tag-opened-at ((tag-opened-at-f n tags options state) tag-name)]
-                          (string/keep-range n tag-opened-at cursor)))))
+                          (string/keep-range n tag-opened-at (:cursor @state))))))
 
 ;; -- Tag history metafunctions -----------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -735,14 +735,14 @@
   ; {:left-tags (maps in vector)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [left-tags]}]
+  [_ _ _ state]
   ; @description
   ; Returns how many occurences of a specific tag has been ended and left behind by the interpreter until the actual cursor position.
   ;
   ; @param (keyword) tag-name
   ;
   ; @return (integer)
-  (fn [tag-name] (vector/match-count left-tags (fn [%] (-> % :name (= tag-name))))))
+  (fn [tag-name] (vector/match-count (:left-tags @state) (fn [%] (-> % :name (= tag-name))))))
 
 (defn tag-met-count-f
   ; @ignore
@@ -758,12 +758,12 @@
   ;  :left-tags (maps in vector)}
   ;
   ; @return (function)
-  [_ _ _ {:keys [actual-tags left-tags]}]
+  [_ _ _ state]
   ; @description
   ; Returns how many occurences of a specific tag has been reached by the interpreter until the actual cursor position.
   ;
   ; @param (keyword) tag-name
   ;
   ; @return (integer)
-  (fn [tag-name] (+ (vector/match-count actual-tags (fn [%] (-> % :name (= tag-name))))
-                    (vector/match-count left-tags   (fn [%] (-> % :name (= tag-name)))))))
+  (fn [tag-name] (+ (vector/match-count (:actual-tags @state) (fn [%] (-> % :name (= tag-name))))
+                    (vector/match-count (:left-tags @state)   (fn [%] (-> % :name (= tag-name)))))))

@@ -92,11 +92,11 @@
   ; @param (map) state
   ;
   ; @return (boolean)
-  [_ _ _ {:keys [actual-tags]}]
+  [_ _ _ state]
   (letfn [(f [{:keys [closed-at opened-at opens-at]}]
              ; Tags that are either already closed or not opened yet:
              (or closed-at (not (or opens-at opened-at))))]
-         (vector/all-items-match? actual-tags f)))
+         (vector/all-items-match? (:actual-tags @state) f)))
 
 (defn depth
   ; @ignore
@@ -111,11 +111,11 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (integer)
-  [_ _ _ {:keys [actual-tags]}]
+  [_ _ _ state]
   (letfn [(f [{:keys [closed-at opened-at opens-at]}]
              ; Tags that are already opened and aren't closed yet:
              (and (or opens-at opened-at) (not closed-at)))]
-         (vector/match-count actual-tags f)))
+         (vector/match-count (:actual-tags @state) f)))
 
 (defn tag-depth
   ; @ignore
@@ -131,11 +131,11 @@
   ; @param (keyword) tag-name
   ;
   ; @return (integer)
-  [_ _ _ {:keys [actual-tags]} tag-name]
+  [_ _ _ state tag-name]
   (letfn [(f [{:keys [closed-at name opened-at opens-at]}]
              ; Tags with a specific tag name that are already opened and aren't closed yet:
              (and (= name tag-name) (or opens-at opened-at) (not closed-at)))]
-         (vector/match-count actual-tags f)))
+         (vector/match-count (:actual-tags @state) f)))
 
 (defn ancestor-tags
   ; @ignore
@@ -150,11 +150,11 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (maps in vector)
-  [_ _ _ {:keys [actual-tags]}]
+  [_ _ _ state]
   (letfn [(f [{:keys [opened-at opens-at closed-at]}]
              ; Tags that are already opened and aren't closed yet:
              (and (or opens-at opened-at) (not closed-at)))]
-         (vector/keep-items-by actual-tags f)))
+         (vector/keep-items-by (:actual-tags @state) f)))
 
 (defn parent-tag
   ; @ignore
@@ -169,11 +169,11 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (map)
-  [_ _ _ {:keys [actual-tags]}]
+  [_ _ _ state]
   (letfn [(f [{:keys [opened-at opens-at closed-at]}]
              ; Tags that are already opened and aren't closed yet:
              (and (or opens-at opened-at) (not closed-at)))]
-         (vector/last-match actual-tags f)))
+         (vector/last-match (:actual-tags @state) f)))
 
 (defn tag-ancestor?
   ; @ignore
@@ -220,22 +220,22 @@
   ; @param (map) state
   ;
   ; @return (integer)
-  [n tags options {:keys [actual-tags left-tags] :as state}]
+  [n tags options state]
   (letfn [(f0 [a b] (< (:started-at a) (or (:opened-at b) (:opens-at b))))     ; <- The parent tag (as 'b') can be actually opening at the actual cursor position!
           (f1 [a b] (and (:opened-at b) (>= (:started-at a) (:opened-at b))))] ; <- The potential ascendant tag (as 'b') can be an omittag without an opening position!
          (if-let [parent-tag (parent-tag n tags options state)]
                  (loop [dex 0 left-siblings []]
                        (if ; - Iterates over the 'left-tags' vector, and counts how many left tags are direct children (not descendants) of the actual parent tag.
                            ; - When the iteration is over it returns the count of the already left children within the actual parent tag.
-                           (seqable/dex-out-of-bounds? left-tags dex) (count left-siblings)
+                           (seqable/dex-out-of-bounds? (:left-tags @state) dex) (count left-siblings)
                            ; - If the observed 'left-tag' started before the parent tag opened, it means that the observed tag is not a child or even a descendant of the parent tag.
                            ; - If any other tag has been already collected into the 'left-siblings' vector during the previous iterations, it can be a potential ascendant of the observed 'left-tag'.
                            ; - If the observed 'left-tag' has ascendant(s) within the parent tag, it means that it is a descendant but not a child of the parent tag.
                            ; - If the last collected tag in the 'left-siblings' vector is an omittag, it means it cannot be an ascendant of the observed 'left-tag'.
                            ; - If a tag is currently ending at the actual cursor position, it can be a potential ascendant of any tags in the 'left-tags' vector
                            ;   and because it is not moved into the 'left-tags' vector from the 'actual-tags' vector yet, it has to be checked separatelly.
-                           (let [left-tag   (nth left-tags dex)
-                                 ending-tag (vector/last-match actual-tags :ends-at)]
+                           (let [left-tag   (nth (:left-tags @state) dex)
+                                 ending-tag (vector/last-match (:actual-tags @state) :ends-at)]
                                 (cond (f0 left-tag parent-tag)           (recur (inc dex) (->   left-siblings))
                                       (f1 left-tag ending-tag)           (recur (inc dex) (->   left-siblings))
                                       (-> left-siblings last nil?)       (recur (inc dex) (conj left-siblings left-tag))
@@ -259,9 +259,9 @@
   ; {:cursor (integer)}
   ;
   ; @return (keyword)
-  [n _ {:keys [offset] :or {offset 0}} {:keys [cursor]}]
+  [n _ {:keys [offset] :or {offset 0}} state]
   (let [offset (seqable/normalize-cursor n offset)]
-       (>= cursor offset)))
+       (>= (:cursor @state) offset)))
 
 (defn endpoint-reached?
   ; @ignore
@@ -277,9 +277,9 @@
   ; {:cursor (integer)}
   ;
   ; @return (keyword)
-  [n _ {:keys [endpoint] :or {endpoint (count n)}} {:keys [cursor]}]
+  [n _ {:keys [endpoint] :or {endpoint (count n)}} state]
   (let [endpoint (seqable/normalize-cursor n endpoint)]
-       (>= cursor endpoint)))
+       (>= (:cursor @state) endpoint)))
 
 (defn iteration-ended?
   ; @ignore
@@ -294,8 +294,8 @@
   ; {:cursor (integer)}
   ;
   ; @return (boolean)
-  [n _ _ {:keys [cursor]}]
-  (seqable/cursor-last? n cursor))
+  [n _ _ state]
+  (seqable/cursor-last? n (:cursor @state)))
 
 (defn iteration-stopped?
   ; @ignore
@@ -310,8 +310,8 @@
   ; {:cursor (integer)}
   ;
   ; @return (boolean)
-  [_ _ _ {:keys [cursor]}]
-  (= cursor :iteration-stopped))
+  [_ _ _ state]
+  (= (:cursor @state) :iteration-stopped))
 
 ;; -- Interpreter functions ---------------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -329,7 +329,7 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (keyword)
-  [n tags options {:keys [actual-tags] :as state}]
+  [n tags options state]
   (if-let [parent-tag (parent-tag n tags options state)]
           (if-let [tag-options (tag-options n tags options state (:name parent-tag))]
                   (if (:disable-interpreter? tag-options)
@@ -378,8 +378,8 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (boolean)
-  [_ _ _ {:keys [actual-tags]}]
-  (-> actual-tags last :will-open-at some?))
+  [_ _ _ state]
+  (-> (:actual-tags @state) last :will-open-at some?))
 
 (defn reading-any-closing-match?
   ; @ignore
@@ -394,8 +394,8 @@
   ; {:actual-tags (maps in vector)}
   ;
   ; @return (boolean)
-  [_ _ _ {:keys [actual-tags]}]
-  (-> actual-tags last :will-end-at some?))
+  [_ _ _ state]
+  (-> (:actual-tags @state) last :will-end-at some?))
 
 ;; -- Tag processing requirement functions ------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -563,7 +563,7 @@
   ; @return (map)
   ; {:match (integer)
   ;  :name (keyword)}
-  [n tags options {:keys [cursor] :as state} tag-name]
+  [n tags options state tag-name]
   ; Merging regex actions into one function decreases the interpreter processing time.
   (if-let [opening-pattern (tag-opening-pattern n tags options state tag-name)]
           (let [tag-options           (tag-options n tags options state tag-name)
@@ -576,9 +576,9 @@
                 max-match-length      (or (get-in tag-options                     [:pattern-limits :opening/match])
                                           (get-in tag-options                     [:pattern-limits :match])
                                           (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
-                corrected-cursor      (min cursor max-lookbehind-length)
-                observed-from         (max (->    0) (- cursor max-lookbehind-length))
-                observed-to           (min (count n) (+ cursor max-match-length max-lookahead-length))
+                corrected-cursor      (min (:cursor @state) max-lookbehind-length)
+                observed-from         (max (->    0) (- (:cursor @state) max-lookbehind-length))
+                observed-to           (min (count n) (+ (:cursor @state) max-match-length max-lookahead-length))
                 observed-part         (subs n observed-from observed-to)]
                (if-let [opening-match (regex/re-from observed-part opening-pattern corrected-cursor)]
                        {:name tag-name :match opening-match}))))
@@ -599,7 +599,7 @@
   ; @return (map)
   ; {:match (integer)
   ;  :name (keyword)}
-  [n tags options {:keys [cursor] :as state} tag-name]
+  [n tags options state tag-name]
   ; Merging regex actions into one function decreases the interpreter processing time.
   (if-let [closing-pattern (tag-closing-pattern n tags options state tag-name)]
           (let [tag-options           (tag-options n tags options state tag-name)
@@ -612,9 +612,9 @@
                 max-match-length      (or (get-in tag-options                     [:pattern-limits :closing/match])
                                           (get-in tag-options                     [:pattern-limits :match])
                                           (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
-                corrected-cursor      (min cursor max-lookbehind-length)
-                observed-from         (max (->    0) (- cursor max-lookbehind-length))
-                observed-to           (min (count n) (+ cursor max-match-length max-lookahead-length))
+                corrected-cursor      (min (:cursor @state) max-lookbehind-length)
+                observed-from         (max (->    0) (- (:cursor @state) max-lookbehind-length))
+                observed-to           (min (count n) (+ (:cursor @state) max-match-length max-lookahead-length))
                 observed-part         (subs n observed-from observed-to)]
                (if-let [closing-match (regex/re-from observed-part closing-pattern corrected-cursor)]
                        {:name tag-name :match closing-match}))))
@@ -648,13 +648,14 @@
   ;                          {:name :paren :starts-at  7 :will-open-at 8}]}
   ;
   ; @return (map)
-  [n tags options {:keys [cursor] :as state} {:keys [match name]}]
+  [n tags options state {:keys [match name]}]
   (letfn [(f [{:keys [closed-at opened-at opens-at]}]
              ; Tags that are already opened and aren't closed yet:
              (and (or opens-at opened-at) (not closed-at)))]
          (if (tag-omittag? n tags options state name)
-             (update state :actual-tags vector/conj-item {:name name :starts-at cursor :will-end-at  (+ cursor (count match))})
-             (update state :actual-tags vector/conj-item {:name name :starts-at cursor :will-open-at (+ cursor (count match))}))))
+             (swap! state update :actual-tags vector/conj-item {:name name :starts-at (:cursor @state) :will-end-at  (+ (:cursor @state) (count match))})
+             (swap! state update :actual-tags vector/conj-item {:name name :starts-at (:cursor @state) :will-open-at (+ (:cursor @state) (count match))})))
+  nil)
 
 (defn close-parent-tag
   ; @ignore
@@ -684,10 +685,11 @@
   ;                           {:name :paren :started-at 7 :opened-at 8 :closes-at 10 :will-end-at 11}]}
   ;
   ; @return (map)
-  [n tags options {:keys [actual-tags cursor] :as state} {:keys [match name]}]
+  [n tags options state {:keys [match name]}]
   (let [parent-tag     (parent-tag n tags options state)
-        parent-tag-dex (vector/last-dex-of actual-tags parent-tag)]
-       (update state :actual-tags vector/update-nth-item parent-tag-dex merge {:closes-at cursor :will-end-at (+ cursor (count match))})))
+        parent-tag-dex (vector/last-dex-of (:actual-tags @state) parent-tag)]
+       (swap! state update :actual-tags vector/update-nth-item parent-tag-dex merge {:closes-at (:cursor @state) :will-end-at (+ (:cursor @state) (count match))})
+       nil))
 
 ;; -- State functions ---------------------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -705,7 +707,8 @@
   ;
   ; @return (map)
   [_ _ _ state]
-  (dissoc state :result))
+  (swap! state dissoc :result)
+  nil)
 
 ;; -- Actual state functions --------------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -725,7 +728,8 @@
   ; @return (map)
   [_ _ _ state left-tag]
   (let [left-tag (map/move left-tag :ends-at :ended-at)]
-       (update state :left-tags vector/conj-item left-tag)))
+       (swap! state update :left-tags vector/conj-item left-tag)
+       nil))
 
 (defn actualize-previous-tags
   ; @ignore
@@ -740,15 +744,14 @@
   ; {:cursor (integer)}
   ;
   ; @return (map)
-  [_ _ _ {:keys [cursor] :as state}]
-  (letfn [(f0 [%] (cond-> % (-> % :will-open-at (=      cursor))  (map/move :will-open-at :opens-at)
-                            (-> % :will-end-at  (=      cursor))  (map/move :will-end-at  :ends-at)
-                            (-> % :starts-at    (= (dec cursor))) (map/move :starts-at    :started-at)
-                            (-> % :opens-at     (= (dec cursor))) (map/move :opens-at     :opened-at)
-                            (-> % :closes-at    (= (dec cursor))) (map/move :closes-at    :closed-at)))]
-         (update state :actual-tags vector/->items f0)))
-
-(def LEFT-TAGS (atom []))
+  [_ _ _ state]
+  (letfn [(f0 [%] (cond-> % (-> % :will-open-at (=      (:cursor @state)))  (map/move :will-open-at :opens-at)
+                            (-> % :will-end-at  (=      (:cursor @state)))  (map/move :will-end-at  :ends-at)
+                            (-> % :starts-at    (= (dec (:cursor @state)))) (map/move :starts-at    :started-at)
+                            (-> % :opens-at     (= (dec (:cursor @state)))) (map/move :opens-at     :opened-at)
+                            (-> % :closes-at    (= (dec (:cursor @state)))) (map/move :closes-at    :closed-at)))]
+         (swap! state update :actual-tags vector/->items f0)
+         nil))
 
 (defn actualize-updated-tags
   ; @ignore
@@ -764,20 +767,26 @@
   ; @param (map) state
   ;
   ; @return (map)
-  [_ _ _ {:keys [actual-tags left-tags] :as state}]
+  [_ _ _ state]
   (letfn [(f0 [a b] (> (:started-at a) (:started-at b)))]
-         (if-let [ending-tag-dex (vector/last-dex-by actual-tags :ends-at)]
-                 (let [ended-tag (-> actual-tags (nth ending-tag-dex) (map/move :ends-at :ended-at))]
-                      (if-let [insert-dex (vector/first-dex-by @LEFT-TAGS #(f0 % ended-tag))]
-                              (do (swap! LEFT-TAGS vector/insert-item insert-dex ended-tag)
-                                  (-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)))
-                              (do (swap! LEFT-TAGS vector/conj-item ended-tag)
-                                  (-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)))))
-                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)
-                              ;          (update :left-tags   vector/insert-item insert-dex ended-tag)]
-                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)
-                              ;          (update :left-tags   vector/conj-item ended-tag)]))
-                 (-> state))))
+         (if-let [ending-tag-dex (vector/last-dex-by (:actual-tags @state) :ends-at)]
+           (let [ended-tag (-> (:actual-tags @state) (nth ending-tag-dex) (map/move :ends-at :ended-at))]
+                (do (swap! state update :actual-tags vector/remove-nth-item ending-tag-dex)
+                    (swap! state update :left-tags vector/conj-item :x)
+                 ;(let [ended-tag (-> (:actual-tags @state) (nth ending-tag-dex) (map/move :ends-at :ended-at))]
+                  ;    (if-let [insert-dex (vector/first-dex-by (:left-tags @state) #(f0 % ended-tag))]
+                  ;            (do
+                  ;              (swap! state update :actual-tags vector/remove-nth-item ending-tag-dex)
+                  ;              (swap! state update :left-tags vector/insert-item insert-dex ended-tag)]
+                  ;              nil
+                  ;            (do (swap! state update :actual-tags vector/remove-nth-item ending-tag-dex)
+                  ;              (swap! state update :left-tags vector/conj-item ended-tag)
+                  ;              nil]
+                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex))
+                                        ;(update :left-tags   vector/insert-item insert-dex ended-tag))
+                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex))))
+                                        ;(update :left-tags   vector/conj-item ended-tag))))
+                 (-> state))))))
 
 (defn check-for-opening-match
   ; @ignore
@@ -838,12 +847,13 @@
   ;
   ; @return (map)
   [n tags options state]
-  (let [state (actualize-previous-tags n tags options state)]
+  (let [_ (actualize-previous-tags n tags options state)]
        (or (if-let [found-opening-match (check-for-opening-match n tags options state)]
                    (start-child-tag n tags options state found-opening-match))
            (if-let [found-closing-match (check-for-closing-match n tags options state)]
                    (close-parent-tag n tags options state found-closing-match))
-           (-> state))))
+           (-> nil)))
+  nil)
 
 (defn update-actual-state
   ; @ignore
@@ -861,11 +871,12 @@
   ; {:cursor (integer or keyword)
   ;  :result (*)}
   [n tags options state updated-result]
-  (cond (-> updated-result vector? not)              (-> state (assoc :result   (-> updated-result)))
-        (-> updated-result first (= :$stop))         (-> state (assoc :result   (-> updated-result last) :cursor :iteration-stopped))
-        (-> updated-result first (= :$set-metadata)) (-> state (assoc :metadata (-> updated-result second))
-                                                               (assoc :result   (-> updated-result last)))
-        :else                                        (-> state (assoc :result   (-> updated-result)))))
+  (cond (-> updated-result vector? not)              (swap! state assoc :result   (-> updated-result))
+        (-> updated-result first (= :$stop))         (swap! state assoc :result   (-> updated-result last) :cursor :iteration-stopped)
+        (-> updated-result first (= :$set-metadata)) (swap! state assoc :metadata (-> updated-result second))
+                                                        ;       (assoc :result   (-> updated-result last)))
+        :else                                        (swap! state assoc :result   (-> updated-result)))
+  nil)
 
 (defn prepare-next-state
   ; @ignore

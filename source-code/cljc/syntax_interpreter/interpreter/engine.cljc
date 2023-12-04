@@ -6,6 +6,8 @@
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
+(def STATE (atom {}))
+
 (defn interpreter
   ; @description
   ; - Applies the given 'f' function at each cursor position of the given 'n' string.
@@ -233,22 +235,17 @@
 
           ; ...
           (let [initial-state {:actual-tags [] :left-tags [] :cursor 0 :result initial}]
-               (reset! interpreter.utils/LEFT-TAGS nil)
-               (loop [{:keys [result] :as state} initial-state]
+               (reset! STATE {:actual-tags [] :left-tags [] :cursor 0 :result initial})
+               (loop [state STATE]
                      (let [actual-state           (interpreter.utils/update-previous-state n tags options state)
-                           provided-state         (interpreter.utils/filter-provided-state n tags options actual-state)
-                           provided-metafunctions (-> actual-state f0)
-                           applied-function       (-> actual-state f1)
-                           updated-result         (-> result (applied-function provided-state provided-metafunctions))
-                           updated-state          (interpreter.utils/update-actual-state n tags options actual-state updated-result)]
-                          (cond (interpreter.utils/iteration-stopped? n tags options updated-state) (-> updated-state :result)
-                                (interpreter.utils/endpoint-reached?  n tags options updated-state) (-> updated-state :result)
-                                (interpreter.utils/iteration-ended?   n tags options updated-state) (-> updated-state :result)
-                                :next-iteration (let [prepared-state (interpreter.utils/prepare-next-state n tags options updated-state)]
-                                                     (recur (-> prepared-state (update :cursor inc)))))))))))
-
-                      ;    (cond (interpreter.utils/iteration-stopped? n tags options updated-state) (-> updated-state :result))))))))
-                      ;          (interpreter.utils/endpoint-reached?  n tags options updated-state) (-> updated-state :result)
-                      ;          (interpreter.utils/iteration-ended?   n tags options updated-state) (-> updated-state :result)
-                      ;          :next-iteration (let [prepared-state (interpreter.utils/prepare-next-state n tags options updated-state)]
-                      ;                               (recur (-> prepared-state (update :cursor inc)))])))))
+                           provided-state         (interpreter.utils/filter-provided-state n tags options state)
+                           provided-metafunctions (-> state f0)
+                           applied-function       (-> state f1)
+                           updated-result         (-> @state :result (applied-function state provided-metafunctions))
+                           updated-state          (interpreter.utils/update-actual-state n tags options state updated-result)]
+                          (cond (interpreter.utils/iteration-stopped? n tags options state) (str @state :result)
+                                (interpreter.utils/endpoint-reached?  n tags options state) (str @state :result)
+                                (interpreter.utils/iteration-ended?   n tags options state) (str "a" @state)
+                                :next-iteration (let [prepared-state (interpreter.utils/prepare-next-state n tags options state)]
+                                                     (recur (do (swap! state update :cursor inc)
+                                                                state))))))))))
