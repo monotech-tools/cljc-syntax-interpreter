@@ -730,7 +730,7 @@
   ;
   ; @description
   ; - Moves the currently ending tag (if any) from the 'actual-tags' tags vector into the 'left-tags' map.
-  ; - Ensures that the boundary vectors in the 'left-tags' map is sorted by the starting positions of the left tags.
+  ; - Ensures that the tags in the 'left-tags' map is sorted by the starting positions of the tags.
   ;   By default, it would be sorted by the ending positions if the ended tags were simply appended to the end of the vector.
   ;
   ; @param (string) n
@@ -824,7 +824,7 @@
   ; @ignore
   ;
   ; @description
-  ; After the 'f' function is applied, it stores the updated result in the actual 'state' map.
+  ; After the given 'f' function is applied, it stores the updated result in the actual 'state' map.
   ;
   ; @param (string) n
   ; @param (map) tags
