@@ -233,6 +233,7 @@
 
           ; ...
           (let [initial-state {:actual-tags [] :left-tags [] :cursor 0 :result initial}]
+               (reset! interpreter.utils/LEFT-TAGS nil)
                (loop [{:keys [result] :as state} initial-state]
                      (let [actual-state           (interpreter.utils/update-previous-state n tags options state)
                            provided-state         (interpreter.utils/filter-provided-state n tags options actual-state)
@@ -245,3 +246,9 @@
                                 (interpreter.utils/iteration-ended?   n tags options updated-state) (-> updated-state :result)
                                 :next-iteration (let [prepared-state (interpreter.utils/prepare-next-state n tags options updated-state)]
                                                      (recur (-> prepared-state (update :cursor inc)))))))))))
+
+                      ;    (cond (interpreter.utils/iteration-stopped? n tags options updated-state) (-> updated-state :result))))))))
+                      ;          (interpreter.utils/endpoint-reached?  n tags options updated-state) (-> updated-state :result)
+                      ;          (interpreter.utils/iteration-ended?   n tags options updated-state) (-> updated-state :result)
+                      ;          :next-iteration (let [prepared-state (interpreter.utils/prepare-next-state n tags options updated-state)]
+                      ;                               (recur (-> prepared-state (update :cursor inc)))])))))

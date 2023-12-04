@@ -748,6 +748,8 @@
                             (-> % :closes-at    (= (dec cursor))) (map/move :closes-at    :closed-at)))]
          (update state :actual-tags vector/->items f0)))
 
+(def LEFT-TAGS (atom []))
+
 (defn actualize-updated-tags
   ; @ignore
   ;
@@ -766,11 +768,15 @@
   (letfn [(f0 [a b] (> (:started-at a) (:started-at b)))]
          (if-let [ending-tag-dex (vector/last-dex-by actual-tags :ends-at)]
                  (let [ended-tag (-> actual-tags (nth ending-tag-dex) (map/move :ends-at :ended-at))]
-                      (if-let [insert-dex (vector/first-dex-by left-tags #(f0 % ended-tag))]
-                              (-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)
-                                        (update :left-tags   vector/insert-item insert-dex ended-tag))
-                              (-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)
-                                        (update :left-tags   vector/conj-item ended-tag))))
+                      (if-let [insert-dex (vector/first-dex-by @LEFT-TAGS #(f0 % ended-tag))]
+                              (do (swap! LEFT-TAGS vector/insert-item insert-dex ended-tag)
+                                  (-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)))
+                              (do (swap! LEFT-TAGS vector/conj-item ended-tag)
+                                  (-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)))))
+                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)
+                              ;          (update :left-tags   vector/insert-item insert-dex ended-tag)]
+                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex)
+                              ;          (update :left-tags   vector/conj-item ended-tag)]))
                  (-> state))))
 
 (defn check-for-opening-match
