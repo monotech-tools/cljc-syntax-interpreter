@@ -6,8 +6,6 @@
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
-(def STATE (atom {}))
-
 (defn interpreter
   ; @description
   ; - Applies the given 'f' function at each cursor position of the given 'n' string.
@@ -229,23 +227,23 @@
            ; @return (map)
            (f1 [state]
                (if (interpreter.utils/offset-reached? n tags options state)
-                   (fn [result state metafunctions] (try (f result state metafunctions)
+                   (fn [result state metafunctions] (try (let [provided-state (dissoc @state :result)]
+                                                              (f result provided-state metafunctions))
                                                          (catch Exception e (println e))))
                    (fn [result _ _] (-> result))))]
 
-          ; ...
-          (let [initial-state {:actual-tags [] :left-tags [] :cursor 0 :result initial}]
-               (reset! STATE {:actual-tags [] :left-tags [] :cursor 0 :result initial})
-               (loop [state STATE]
-                     (let [actual-state           (interpreter.utils/update-previous-state n tags options state)
-                           provided-state         (interpreter.utils/filter-provided-state n tags options state)
-                           provided-metafunctions (-> state f0)
-                           applied-function       (-> state f1)
-                           updated-result         (-> @state :result (applied-function state provided-metafunctions))
-                           updated-state          (interpreter.utils/update-actual-state n tags options state updated-result)]
-                          (cond (interpreter.utils/iteration-stopped? n tags options state) (str @state :result)
-                                (interpreter.utils/endpoint-reached?  n tags options state) (str @state :result)
-                                (interpreter.utils/iteration-ended?   n tags options state) (str "a" @state)
-                                :next-iteration (let [prepared-state (interpreter.utils/prepare-next-state n tags options state)]
-                                                     (recur (do (swap! state update :cursor inc)
-                                                                state))))))))))
+          ; Much faster if the state is stored in an atom and it is not passed as a map to the utility functions
+          ; in case of the given 'n' string is extremly long (over 100k char) and it contains a lot of tags that
+          ; could generate an extremly long 'left-tags' vector within the actual state.
+          (let [initial-state {:actual-tags [] :left-tags [] :cursor 0 :result initial}
+                state         (atom initial-state)]
+               (loop [] (interpreter.utils/update-previous-state n tags options state)
+                        (let [provided-metafunctions (-> state f0)
+                              applied-function       (-> state f1)
+                              updated-result         (-> state deref :result (applied-function state provided-metafunctions))]
+                             (interpreter.utils/update-actual-state n tags options state updated-result)
+                             (cond (interpreter.utils/iteration-stopped? n tags options state) (-> @state :result)
+                                   (interpreter.utils/endpoint-reached?  n tags options state) (-> @state :result)
+                                   (interpreter.utils/iteration-ended?   n tags options state) (-> @state :result)
+                                   :next-iteration (do (interpreter.utils/prepare-next-state n tags options state)
+                                                       (recur)))))))))

@@ -19,7 +19,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (regex pattern)
@@ -36,7 +36,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (regex pattern)
@@ -53,7 +53,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (map)
@@ -70,7 +70,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (map)
@@ -89,14 +89,14 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (boolean)
   [_ _ _ state]
-  (letfn [(f [{:keys [closed-at opened-at opens-at]}]
-             ; Tags that are either already closed or not opened yet:
-             (or closed-at (not (or opens-at opened-at))))]
-         (vector/all-items-match? (:actual-tags @state) f)))
+  (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
+              ; Tags that are either already closed or not opened yet:
+              (or closed-at (not (or opens-at opened-at))))]
+         (vector/all-items-match? (:actual-tags @state) f0)))
 
 (defn depth
   ; @ignore
@@ -107,15 +107,14 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
+  ; @param (atom) state
   ;
   ; @return (integer)
   [_ _ _ state]
-  (letfn [(f [{:keys [closed-at opened-at opens-at]}]
-             ; Tags that are already opened and aren't closed yet:
-             (and (or opens-at opened-at) (not closed-at)))]
-         (vector/match-count (:actual-tags @state) f)))
+  (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
+              ; Tags that are already opened and aren't closed yet:
+              (and (or opens-at opened-at) (not closed-at)))]
+         (vector/match-count (:actual-tags @state) f0)))
 
 (defn tag-depth
   ; @ignore
@@ -126,16 +125,15 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (integer)
   [_ _ _ state tag-name]
-  (letfn [(f [{:keys [closed-at name opened-at opens-at]}]
-             ; Tags with a specific tag name that are already opened and aren't closed yet:
-             (and (= name tag-name) (or opens-at opened-at) (not closed-at)))]
-         (vector/match-count (:actual-tags @state) f)))
+  (letfn [(f0 [{:keys [closed-at name opened-at opens-at]}]
+              ; Tags with a specific tag name that are already opened and aren't closed yet:
+              (and (= name tag-name) (or opens-at opened-at) (not closed-at)))]
+         (vector/match-count (:actual-tags @state) f0)))
 
 (defn ancestor-tags
   ; @ignore
@@ -146,15 +144,14 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
+  ; @param (atom) state
   ;
   ; @return (maps in vector)
   [_ _ _ state]
-  (letfn [(f [{:keys [opened-at opens-at closed-at]}]
-             ; Tags that are already opened and aren't closed yet:
-             (and (or opens-at opened-at) (not closed-at)))]
-         (vector/keep-items-by (:actual-tags @state) f)))
+  (letfn [(f0 [{:keys [opened-at opens-at closed-at]}]
+              ; Tags that are already opened and aren't closed yet:
+              (and (or opens-at opened-at) (not closed-at)))]
+         (vector/keep-items-by (:actual-tags @state) f0)))
 
 (defn parent-tag
   ; @ignore
@@ -165,15 +162,14 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
+  ; @param (atom) state
   ;
   ; @return (map)
   [_ _ _ state]
-  (letfn [(f [{:keys [opened-at opens-at closed-at]}]
-             ; Tags that are already opened and aren't closed yet:
-             (and (or opens-at opened-at) (not closed-at)))]
-         (vector/last-match (:actual-tags @state) f)))
+  (letfn [(f0 [{:keys [opened-at opens-at closed-at]}]
+              ; Tags that are already opened and aren't closed yet:
+              (and (or opens-at opened-at) (not closed-at)))]
+         (vector/last-match (:actual-tags @state) f0)))
 
 (defn tag-ancestor?
   ; @ignore
@@ -184,7 +180,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (integer)
@@ -200,7 +196,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
@@ -217,7 +213,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (integer)
   [n tags options state]
@@ -234,7 +230,7 @@
                            ; - If the last collected tag in the 'left-siblings' vector is an omittag, it means it cannot be an ascendant of the observed 'left-tag'.
                            ; - If a tag is currently ending at the actual cursor position, it can be a potential ascendant of any tags in the 'left-tags' vector
                            ;   and because it is not moved into the 'left-tags' vector from the 'actual-tags' vector yet, it has to be checked separatelly.
-                           (let [left-tag   (nth (:left-tags @state) dex)
+                           (let [left-tag   (vector/nth-item   (:left-tags   @state) dex)
                                  ending-tag (vector/last-match (:actual-tags @state) :ends-at)]
                                 (cond (f0 left-tag parent-tag)           (recur (inc dex) (->   left-siblings))
                                       (f1 left-tag ending-tag)           (recur (inc dex) (->   left-siblings))
@@ -255,8 +251,7 @@
   ; @param (map) tags
   ; @param (map) options
   ; {:offset (integer)(opt)}
-  ; @param (map) state
-  ; {:cursor (integer)}
+  ; @param (atom) state
   ;
   ; @return (keyword)
   [n _ {:keys [offset] :or {offset 0}} state]
@@ -273,8 +268,7 @@
   ; @param (map) tags
   ; @param (map) options
   ; {:endpoint (integer)(opt)}
-  ; @param (map) state
-  ; {:cursor (integer)}
+  ; @param (atom) state
   ;
   ; @return (keyword)
   [n _ {:keys [endpoint] :or {endpoint (count n)}} state]
@@ -290,8 +284,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:cursor (integer)}
+  ; @param (atom) state
   ;
   ; @return (boolean)
   [n _ _ state]
@@ -306,8 +299,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:cursor (integer)}
+  ; @param (atom) state
   ;
   ; @return (boolean)
   [_ _ _ state]
@@ -325,8 +317,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
+  ; @param (atom) state
   ;
   ; @return (keyword)
   [n tags options state]
@@ -344,7 +335,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (boolean)
   [n tags options state]
@@ -359,7 +350,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (boolean)
   [n tags options state]
@@ -374,12 +365,11 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
+  ; @param (atom) state
   ;
   ; @return (boolean)
   [_ _ _ state]
-  (-> (:actual-tags @state) last :will-open-at some?))
+  (-> @state :actual-tags last :will-open-at ))
 
 (defn reading-any-closing-match?
   ; @ignore
@@ -390,12 +380,12 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
+  ; @param (atom) state
   ;
   ; @return (boolean)
   [_ _ _ state]
-  (-> (:actual-tags @state) last :will-end-at some?))
+  (-> @state :actual-tags last :will-end-at))
+
 
 ;; -- Tag processing requirement functions ------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -409,7 +399,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
@@ -426,7 +416,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
@@ -443,7 +433,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
@@ -460,7 +450,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
@@ -477,15 +467,15 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
   [n tags options state tag-name]
   (if-let [tag-options (tag-options n tags options state tag-name)]
           (if-let [accepted-ancestors (:accepted-ancestors tag-options)]
-                  (letfn [(f [accepted-ancestor] (tag-ancestor? n tags options state accepted-ancestor))]
-                         (some f accepted-ancestors)))))
+                  (letfn [(f0 [accepted-ancestor] (tag-ancestor? n tags options state accepted-ancestor))]
+                         (some f0 accepted-ancestors)))))
 
 (defn tag-any-accepted-parent-opened?
   ; @ignore
@@ -496,15 +486,15 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
   [n tags options state tag-name]
   (if-let [tag-options (tag-options n tags options state tag-name)]
           (if-let [accepted-parents (:accepted-parents tag-options)]
-                  (letfn [(f [accepted-parent] (tag-parent? n tags options state accepted-parent))]
-                         (some f accepted-parents)))))
+                  (letfn [(f0 [accepted-parent] (tag-parent? n tags options state accepted-parent))]
+                         (some f0 accepted-parents)))))
 
 (defn tag-ancestor-requirements-met?
   ; @ignore
@@ -515,7 +505,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
@@ -534,7 +524,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (boolean)
@@ -556,8 +546,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:cursor (integer)}
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (map)
@@ -576,7 +565,7 @@
                 max-match-length      (or (get-in tag-options                     [:pattern-limits :opening/match])
                                           (get-in tag-options                     [:pattern-limits :match])
                                           (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
-                corrected-cursor      (min (:cursor @state) max-lookbehind-length)
+                corrected-cursor      (min              (:cursor @state) max-lookbehind-length)
                 observed-from         (max (->    0) (- (:cursor @state) max-lookbehind-length))
                 observed-to           (min (count n) (+ (:cursor @state) max-match-length max-lookahead-length))
                 observed-part         (subs n observed-from observed-to)]
@@ -592,8 +581,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:cursor (integer)}
+  ; @param (atom) state
   ; @param (keyword) tag-name
   ;
   ; @return (map)
@@ -612,7 +600,7 @@
                 max-match-length      (or (get-in tag-options                     [:pattern-limits :closing/match])
                                           (get-in tag-options                     [:pattern-limits :match])
                                           (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
-                corrected-cursor      (min (:cursor @state) max-lookbehind-length)
+                corrected-cursor      (min              (:cursor @state) max-lookbehind-length)
                 observed-from         (max (->    0) (- (:cursor @state) max-lookbehind-length))
                 observed-to           (min (count n) (+ (:cursor @state) max-match-length max-lookahead-length))
                 observed-part         (subs n observed-from observed-to)]
@@ -631,8 +619,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:cursor (integer)}
+  ; @param (atom) state
   ; @param (map) opening-match
   ; {:match (string)
   ;  :name (keyword)}
@@ -654,8 +641,7 @@
              (and (or opens-at opened-at) (not closed-at)))]
          (if (tag-omittag? n tags options state name)
              (swap! state update :actual-tags vector/conj-item {:name name :starts-at (:cursor @state) :will-end-at  (+ (:cursor @state) (count match))})
-             (swap! state update :actual-tags vector/conj-item {:name name :starts-at (:cursor @state) :will-open-at (+ (:cursor @state) (count match))})))
-  nil)
+             (swap! state update :actual-tags vector/conj-item {:name name :starts-at (:cursor @state) :will-open-at (+ (:cursor @state) (count match))}))))
 
 (defn close-parent-tag
   ; @ignore
@@ -666,9 +652,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)
-  ;  :cursor (integer)}
+  ; @param (atom) state
   ; @param (map) closing-match
   ; {:match (string)
   ;  :name (keyword)}
@@ -688,48 +672,10 @@
   [n tags options state {:keys [match name]}]
   (let [parent-tag     (parent-tag n tags options state)
         parent-tag-dex (vector/last-dex-of (:actual-tags @state) parent-tag)]
-       (swap! state update :actual-tags vector/update-nth-item parent-tag-dex merge {:closes-at (:cursor @state) :will-end-at (+ (:cursor @state) (count match))})
-       nil))
-
-;; -- State functions ---------------------------------------------------------
-;; ----------------------------------------------------------------------------
-
-(defn filter-provided-state
-  ; @ignore
-  ;
-  ; @description
-  ; Removes the ':result' from the actual state, because the result is provided to the applied function in a separate parameter.
-  ;
-  ; @param (string) n
-  ; @param (map) tags
-  ; @param (map) options
-  ; @param (map) state
-  ;
-  ; @return (map)
-  [_ _ _ state]
-  (swap! state dissoc :result)
-  nil)
+       (swap! state update :actual-tags vector/update-nth-item parent-tag-dex merge {:closes-at (:cursor @state) :will-end-at (+ (:cursor @state) (count match))})))
 
 ;; -- Actual state functions --------------------------------------------------
 ;; ----------------------------------------------------------------------------
-
-(defn archive-left-tag
-  ; @ignore
-  ;
-  ; @description
-  ; ...
-  ;
-  ; @param (string) n
-  ; @param (map) tags
-  ; @param (map) options
-  ; @param (map) state
-  ; @param (map) left-tag
-  ;
-  ; @return (map)
-  [_ _ _ state left-tag]
-  (let [left-tag (map/move left-tag :ends-at :ended-at)]
-       (swap! state update :left-tags vector/conj-item left-tag)
-       nil))
 
 (defn actualize-previous-tags
   ; @ignore
@@ -740,7 +686,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; {:cursor (integer)}
   ;
   ; @return (map)
@@ -750,8 +696,7 @@
                             (-> % :starts-at    (= (dec (:cursor @state)))) (map/move :starts-at    :started-at)
                             (-> % :opens-at     (= (dec (:cursor @state)))) (map/move :opens-at     :opened-at)
                             (-> % :closes-at    (= (dec (:cursor @state)))) (map/move :closes-at    :closed-at)))]
-         (swap! state update :actual-tags vector/->items f0)
-         nil))
+         (swap! state update :actual-tags vector/->items f0)))
 
 (defn actualize-updated-tags
   ; @ignore
@@ -764,29 +709,17 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (map)
   [_ _ _ state]
   (letfn [(f0 [a b] (> (:started-at a) (:started-at b)))]
          (if-let [ending-tag-dex (vector/last-dex-by (:actual-tags @state) :ends-at)]
-           (let [ended-tag (-> (:actual-tags @state) (nth ending-tag-dex) (map/move :ends-at :ended-at))]
-                (do (swap! state update :actual-tags vector/remove-nth-item ending-tag-dex)
-                    (swap! state update :left-tags vector/conj-item :x)
-                 ;(let [ended-tag (-> (:actual-tags @state) (nth ending-tag-dex) (map/move :ends-at :ended-at))]
-                  ;    (if-let [insert-dex (vector/first-dex-by (:left-tags @state) #(f0 % ended-tag))]
-                  ;            (do
-                  ;              (swap! state update :actual-tags vector/remove-nth-item ending-tag-dex)
-                  ;              (swap! state update :left-tags vector/insert-item insert-dex ended-tag)]
-                  ;              nil
-                  ;            (do (swap! state update :actual-tags vector/remove-nth-item ending-tag-dex)
-                  ;              (swap! state update :left-tags vector/conj-item ended-tag)
-                  ;              nil]
-                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex))
-                                        ;(update :left-tags   vector/insert-item insert-dex ended-tag))
-                              ;(-> state (update :actual-tags vector/remove-nth-item ending-tag-dex))))
-                                        ;(update :left-tags   vector/conj-item ended-tag))))
-                 (-> state))))))
+                 (let [ended-tag (-> (:actual-tags @state) (nth ending-tag-dex) (map/move :ends-at :ended-at))]
+                      (swap! state update :actual-tags vector/remove-nth-item ending-tag-dex)
+                      (if-let [insert-dex (vector/first-dex-by (:left-tags @state) #(f0 % ended-tag))]
+                              (swap! state update :left-tags vector/insert-item insert-dex ended-tag)
+                              (swap! state update :left-tags vector/conj-item              ended-tag))))))
 
 (defn check-for-opening-match
   ; @ignore
@@ -797,22 +730,22 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (map)
   ; {:match (integer)
   ;  :name (keyword)}
   [n tags options state]
-  (letfn [(f [tag-name] (if-let [opening-match (opening-match n tags options state tag-name)]
-                                (and (tag-ancestor-requirements-met? n tags options state tag-name)
-                                     (tag-parent-requirements-met?   n tags options state tag-name)
-                                     (-> opening-match))))]
+  (letfn [(f0 [tag-name] (if-let [opening-match (opening-match n tags options state tag-name)]
+                                 (and (tag-ancestor-requirements-met? n tags options state tag-name)
+                                      (tag-parent-requirements-met?   n tags options state tag-name)
+                                      (-> opening-match))))]
          (and (-> (interpreter-enabled?       n tags options state))
               (-> (reading-any-opening-match? n tags options state) not)
               (-> (reading-any-closing-match? n tags options state) not)
-              (or (some (fn [[tag-name _]] (f tag-name)) (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :high))))
-                  (some (fn [[tag-name _]] (f tag-name)) (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :default))))
-                  (some (fn [[tag-name _]] (f tag-name)) (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :low))))))))
+              (or (some (fn [[tag-name _]] (f0 tag-name)) (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :high))))
+                  (some (fn [[tag-name _]] (f0 tag-name)) (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :default))))
+                  (some (fn [[tag-name _]] (f0 tag-name)) (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :low))))))))
 
 (defn check-for-closing-match
   ; @ignore
@@ -823,7 +756,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (map)
   ; {:match (integer)
@@ -843,7 +776,7 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (map)
   [n tags options state]
@@ -851,9 +784,7 @@
        (or (if-let [found-opening-match (check-for-opening-match n tags options state)]
                    (start-child-tag n tags options state found-opening-match))
            (if-let [found-closing-match (check-for-closing-match n tags options state)]
-                   (close-parent-tag n tags options state found-closing-match))
-           (-> nil)))
-  nil)
+                   (close-parent-tag n tags options state found-closing-match)))))
 
 (defn update-actual-state
   ; @ignore
@@ -864,19 +795,18 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ; @param (*) updated-result
   ;
   ; @return (map)
   ; {:cursor (integer or keyword)
   ;  :result (*)}
   [n tags options state updated-result]
-  (cond (-> updated-result vector? not)              (swap! state assoc :result   (-> updated-result))
-        (-> updated-result first (= :$stop))         (swap! state assoc :result   (-> updated-result last) :cursor :iteration-stopped)
-        (-> updated-result first (= :$set-metadata)) (swap! state assoc :metadata (-> updated-result second))
-                                                        ;       (assoc :result   (-> updated-result last)))
-        :else                                        (swap! state assoc :result   (-> updated-result)))
-  nil)
+  (cond (-> updated-result vector? not)              (swap! state assoc :result    (-> updated-result))
+        (-> updated-result first (= :$stop))         (swap! state assoc :result    (-> updated-result last) :cursor :iteration-stopped)
+        (-> updated-result first (= :$set-metadata)) (swap! state merge {:metadata (-> updated-result second)
+                                                                         :result   (-> updated-result last)})
+        :else                                        (swap! state assoc :result    (-> updated-result))))
 
 (defn prepare-next-state
   ; @ignore
@@ -887,9 +817,9 @@
   ; @param (string) n
   ; @param (map) tags
   ; @param (map) options
-  ; @param (map) state
+  ; @param (atom) state
   ;
   ; @return (map)
   [n tags options state]
-  (let [state (actualize-updated-tags n tags options state)]
-       (-> state)))
+  (actualize-updated-tags n tags options state)
+  (swap! state update :cursor inc))
