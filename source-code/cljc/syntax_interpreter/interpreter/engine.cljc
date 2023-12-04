@@ -51,6 +51,7 @@
   ;   - (tag-content :my-tag)
   ;   Tag history metafunctions:
   ;   - (tag-left-count :my-tag)
+  ;   - (tag-met-count  :my-tag)
   ;
   ; @param (string) n
   ; @param (function) f
@@ -174,6 +175,7 @@
            ;  :tag-depth (function)
            ;  :tag-ends? (function)
            ;  :tag-left-count (function)
+           ;  :tag-met-count (function)
            ;  :tag-opened-at (function)
            ;  :tag-opened? (function)
            ;  :tag-opens? (function)
@@ -207,6 +209,7 @@
                 :tag-depth                  (interpreter.metafunctions/tag-depth-f                 n tags options state)
                 :tag-ends?                  (interpreter.metafunctions/tag-ends-f                  n tags options state)
                 :tag-left-count             (interpreter.metafunctions/tag-left-count-f            n tags options state)
+                :tag-met-count              (interpreter.metafunctions/tag-met-count-f             n tags options state)
                 :tag-opened-at              (interpreter.metafunctions/tag-opened-at-f             n tags options state)
                 :tag-opened?                (interpreter.metafunctions/tag-opened-f                n tags options state)
                 :tag-opens?                 (interpreter.metafunctions/tag-opens-f                 n tags options state)

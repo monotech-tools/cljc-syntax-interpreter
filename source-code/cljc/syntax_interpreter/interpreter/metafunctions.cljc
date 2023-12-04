@@ -735,11 +735,35 @@
   ; {:left-tags (maps in vector)}
   ;
   ; @return (function)
-  [n tags options {:keys [left-tags] :as state}]
+  [_ _ _ {:keys [left-tags]}]
   ; @description
-  ; Returns how many occurences of a specific tag has been ended and left behind by the interpreter at the actual cursor position.
+  ; Returns how many occurences of a specific tag has been ended and left behind by the interpreter until the actual cursor position.
   ;
   ; @param (keyword) tag-name
   ;
   ; @return (integer)
   (fn [tag-name] (vector/match-count left-tags (fn [%] (-> % :name (= tag-name))))))
+
+(defn tag-met-count-f
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the 'tag-met-count' metafunction.
+  ;
+  ; @param (string) n
+  ; @param (map) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; {:actual-tags (maps in vector)
+  ;  :left-tags (maps in vector)}
+  ;
+  ; @return (function)
+  [_ _ _ {:keys [actual-tags left-tags]}]
+  ; @description
+  ; Returns how many occurences of a specific tag has been reached by the interpreter until the actual cursor position.
+  ;
+  ; @param (keyword) tag-name
+  ;
+  ; @return (integer)
+  (fn [tag-name] (+ (vector/match-count actual-tags (fn [%] (-> % :name (= tag-name))))
+                    (vector/match-count left-tags   (fn [%] (-> % :name (= tag-name)))))))
