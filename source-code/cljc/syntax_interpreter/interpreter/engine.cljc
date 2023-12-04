@@ -9,9 +9,10 @@
 (defn interpreter
   ; @description
   ; - Applies the given 'f' function at each cursor position of the given 'n' string.
-  ; - Provides a state of the actual cursor position and a set of metafunctions for the applied function.
+  ; - Provides a state of the actual cursor position and a set of metafunctions, for the applied function.
   ; - The provided state contains the 'actual-tags' vector that describes the opened tags at the actual cursor position
-  ;   and contains the 'left-tags' vector that contains every tag that have been already ended and removed from the 'actual-tags' vector.
+  ;   and contains the 'left-tags' map that contains every tag that have been already ended at the actual cursor position and
+  ;   already removed from the 'actual-tags' vector.
   ; - Metafunctions that are available within the applied 'f' function:
   ;   Ancestor / parent tag metafunctions:
   ;   - (ancestor-tags)
@@ -227,23 +228,21 @@
            ; @return (map)
            (f1 [state]
                (if (interpreter.utils/offset-reached? n tags options state)
-                   (fn [result state metafunctions] (try (let [provided-state (dissoc @state :result)]
-                                                              (f result provided-state metafunctions))
+                   (fn [result state metafunctions] (try (f result state metafunctions)
                                                          (catch Exception e (println e))))
                    (fn [result _ _] (-> result))))]
 
-          ; Much faster if the state is stored in an atom and it is not passed as a map to the utility functions
-          ; in case of the given 'n' string is extremly long (over 100k char) and it contains a lot of tags that
-          ; could generate an extremly long 'left-tags' vector within the actual state.
-          (let [initial-state {:actual-tags [] :left-tags [] :cursor 0 :result initial}
-                state         (atom initial-state)]
-               (loop [] (interpreter.utils/update-previous-state n tags options state)
-                        (let [provided-metafunctions (-> state f0)
-                              applied-function       (-> state f1)
-                              updated-result         (-> state deref :result (applied-function state provided-metafunctions))]
-                             (interpreter.utils/update-actual-state n tags options state updated-result)
-                             (cond (interpreter.utils/iteration-stopped? n tags options state) (-> @state :result)
-                                   (interpreter.utils/endpoint-reached?  n tags options state) (-> @state :result)
-                                   (interpreter.utils/iteration-ended?   n tags options state) (-> @state :result)
-                                   :next-iteration (do (interpreter.utils/prepare-next-state n tags options state)
-                                                       (recur)))))))))
+          ; ...
+          (let [initial-state {:actual-tags [] :left-tags {} :cursor 0 :result initial}]
+               (loop [{:keys [result] :as state} initial-state]
+                     (let [actual-state           (interpreter.utils/update-previous-state n tags options state)
+                           provided-state         (interpreter.utils/filter-provided-state n tags options actual-state)
+                           provided-metafunctions (-> actual-state f0)
+                           applied-function       (-> actual-state f1)
+                           updated-result         (-> result (applied-function provided-state provided-metafunctions))
+                           updated-state          (interpreter.utils/update-actual-state n tags options actual-state updated-result)]
+                          (cond (interpreter.utils/iteration-stopped? n tags options updated-state) (-> updated-state :result)
+                                (interpreter.utils/endpoint-reached?  n tags options updated-state) (-> updated-state :result)
+                                (interpreter.utils/iteration-ended?   n tags options updated-state) (-> updated-state :result)
+                                :next-iteration (let [prepared-state (interpreter.utils/prepare-next-state n tags options updated-state)]
+                                                     (recur prepared-state)))))))))
