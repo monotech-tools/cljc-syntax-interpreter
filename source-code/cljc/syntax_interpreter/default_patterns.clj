@@ -38,12 +38,12 @@
       :symbol     [#"(?<=[\n\r\s\t\[\]\(\)\{\}\"])[a-zA-Z\d\+\-\*\/\=\<\>\!\?\_\%\&\.\~\^][a-zA-Z\d\+\-\*\/\=\<\>\!\?\_\%\&\.\~\^\#\'\:]{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@])"     {:pattern-limits {:lookbehind 1          :lookahead 1}}]
       :unresolved [#"(?<=[\n\r\s\t\[\]\(\)\{\}\"])\'[a-zA-Z\d\+\-\*\/\=\<\>\!\?\_\%\&\.\~\^][a-zA-Z\d\+\-\*\/\=\<\>\!\?\_\%\&\.\~\^\#\'\:]{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@])"   {:pattern-limits {:lookbehind 1          :lookahead 1}}]
       :var        [#"(?<=[\n\r\s\t\[\]\(\)\{\}\"])\#\'[a-zA-Z\d\+\-\*\/\=\<\>\!\?\_\%\&\.\~\^][a-zA-Z\d\+\-\*\/\=\<\>\!\?\_\%\&\.\~\^\#\'\:]{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@])" {:pattern-limits {:lookbehind 1          :lookahead 1}}]
-      :list       [#"\(" #"\)" {:pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
-      :map        [#"\{" #"\}" {:pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
-      :vector     [#"\[" #"\]" {:pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
-      :comment    [#";"  #"\n" {:priority :high :disable-interpreter? true :pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
-      :regex      [#"\"" #"\"" {:priority :high :disable-interpreter? true :pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
-      :string     [#"\"" #"\"" {:priority :high :disable-interpreter? true :pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]})
+      :list       [#"\("   #"\)" {:pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
+      :map        [#"\{"   #"\}" {:pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
+      :vector     [#"\["   #"\]" {:pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
+      :comment    [#";"    #"\n" {:priority :high :disable-interpreter? true :pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]
+      :regex      [#"\#\"" #"\"" {:priority :high :disable-interpreter? true :pattern-limits {:lookbehind 0 :match 2 :lookahead 0}}]
+      :string     [#"\""   #"\"" {:priority :high :disable-interpreter? true :pattern-limits {:lookbehind 0 :match 1 :lookahead 0}}]})
 
 ; @important
 ; Providing lookbehind, lookahead and match length limits helps decrease the processing time.
