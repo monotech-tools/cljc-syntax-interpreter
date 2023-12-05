@@ -1,7 +1,7 @@
 
 (ns syntax-interpreter.interpreter.metafunctions
-    (:require [syntax-interpreter.interpreter.utils :as interpreter.utils]
-              [string.api                           :as string]
+    (:require [string.api                           :as string]
+              [syntax-interpreter.interpreter.utils :as interpreter.utils]
               [vector.api                           :as vector]))
 
 ;; -- Ancestor / parent tag metafunctions -------------------------------------
