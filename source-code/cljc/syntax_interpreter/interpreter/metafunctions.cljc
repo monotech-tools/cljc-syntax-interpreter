@@ -14,7 +14,7 @@
   ; Returns the 'no-tags-opened?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -33,7 +33,7 @@
   ; Returns the 'depth' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -52,7 +52,7 @@
   ; Returns the 'tag-depth' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -73,7 +73,7 @@
   ; Returns the 'ancestor-tags' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -94,7 +94,7 @@
   ; Returns the 'parent-tag' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -113,7 +113,7 @@
   ; Returns the 'tag-ancestor?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -134,7 +134,7 @@
   ; Returns the 'tag-parent?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -155,7 +155,7 @@
   ; Returns the 'left-sibling-count' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -177,7 +177,7 @@
   ; Returns the 'interpreter-disabled-by' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -196,7 +196,7 @@
   ; Returns the 'interpreter-disabled?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -215,7 +215,7 @@
   ; Returns the 'interpreter-enabled?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -234,7 +234,7 @@
   ; Returns the 'reading-any-opening-match?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -253,7 +253,7 @@
   ; Returns the 'reading-any-closing-match?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -275,7 +275,7 @@
   ; Returns the 'stop' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -301,7 +301,7 @@
   ; Returns the 'set-metadata' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -333,7 +333,7 @@
   ; Returns the 'starting-tag' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -353,7 +353,7 @@
   ; Returns the 'opening-tag' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -373,7 +373,7 @@
   ; Returns the 'closing-tag' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -393,7 +393,7 @@
   ; Returns the 'ending-tag' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -413,7 +413,7 @@
   ; Returns the 'tag-starts?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -437,7 +437,7 @@
   ; Returns the 'tag-started?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -462,7 +462,7 @@
   ; Returns the 'tag-started-at' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -487,7 +487,7 @@
   ; Returns the 'tag-opens?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -511,7 +511,7 @@
   ; Returns the 'tag-opened?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)
@@ -538,7 +538,7 @@
   ; Returns the 'tag-opened-at' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -563,7 +563,7 @@
   ; Returns the 'tag-closes?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -587,7 +587,7 @@
   ; Returns the 'tag-closed?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)
@@ -613,7 +613,7 @@
   ; Returns the 'tag-closed-at' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -638,7 +638,7 @@
   ; Returns the 'tag-ends?' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -665,7 +665,7 @@
   ; Returns the 'tag-body' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
@@ -688,7 +688,7 @@
   ; Returns the 'tag-content' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
@@ -714,7 +714,7 @@
   ; Returns the 'tag-left-count' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:left-tags (map)}
@@ -736,7 +736,7 @@
   ; Returns the 'tag-met-count' metafunction.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)

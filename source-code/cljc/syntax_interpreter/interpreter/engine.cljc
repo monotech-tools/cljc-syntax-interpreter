@@ -61,51 +61,42 @@
   ; Takes the state of the actual cursor position as second parameter.
   ; Takes a map with metafunctions as third parameter.
   ; @param (*) initial
-  ; @param (vectors in map)(opt) tags
-  ; {:my-tag (vector)
-  ;   [(regex pattern) pattern / opening-pattern
-  ;    (regex pattern)(opt) closing-pattern
-  ;     Empty / singular tags don't require closing patterns.
-  ;    (map)(opt) options
-  ;     {:accepted-ancestors (keywords in vector or empty vector)(opt)
-  ;       Only processes the tag if at least one of the accepted ancestor tags is opened.
-  ;       Leave this vector empty for tags that are processed only if they have no ancestor tags.
-  ;      :accepted-parents (keywords in vector or empty vector)(opt)
-  ;       Only processes the tag if at least one of the accepted parent tags is opened.
-  ;       Leave this vector empty for tags that are processed only if they have no parent tags.
-  ;      :disable-interpreter? (boolean)(opt)
-  ;       Disables processing of other tags whithin the tag (e.g., for comments, quotes, etc).
-  ;      :pattern-limits (map)(opt)
-  ;       Limited pattern lookaround and match lengths help decrease the processing time.
-  ;       {:lookahead (integer)(opt)
-  ;         Default: 8
-  ;        :lookbehind (integer)(opt)
-  ;         Default: 8
-  ;        :match (integer)(opt)
-  ;         Default: 64
-  ;        :closing/lookahead (integer)(opt)
-  ;         Default: 8
-  ;        :closing/lookbehind (integer)(opt)
-  ;         Default: 8
-  ;        :closing/match (integer)(opt)
-  ;         Default: 64
-  ;        :opening/lookahead (integer)(opt)
-  ;         Default: 8
-  ;        :opening/lookbehind (integer)(opt)
-  ;         Default: 8
-  ;        :opening/match (integer)(opt)
-  ;         Default: 64}
-  ;      :priority (keyword)(opt)
-  ;       In case of more than one opening pattern's match starts at the same cursor position,
-  ;       the interpreter acknowledges the first one with the highest priority.
-  ;       :low, :default, :high
-  ;       Default: :default}]}
+  ; @param (vectors in vector)(opt)(in decreasing priority order) tags
+  ; [[(keyword) tag-name
+  ;   (regex-pattern) pattern / opening-pattern
+  ;   (regex-pattern)(opt) closing-pattern
+  ;   (map)(opt) options
+  ;    {:accepted-ancestors (keywords in vector or empty vector)(opt)
+  ;     Processes the tag only if at least one of the accepted ancestor tags is opened.
+  ;     Leave this vector empty for tags that are processed only if they have no ancestor tags.
+  ;    :accepted-parents (keywords in vector or empty vector)(opt)
+  ;     Processes the tag only if at least one of the accepted parent tags is opened.
+  ;     Leave this vector empty for tags that are processed only if they have no parent tags.
+  ;    :disable-interpreter? (boolean)(opt)
+  ;     Disables processing of other tags whithin the tag (e.g., for comments, quotes, etc).
+  ;    :pattern-limits (map)(opt)
+  ;     Limited pattern lookaround and match lengths help decrease the processing time.
+  ;     {:lookahead (integer)(opt)
+  ;       Default: 8
+  ;      :lookbehind (integer)(opt)
+  ;       Default: 8
+  ;      :match (integer)(opt)
+  ;       Default: 64
+  ;      :closing/lookahead (integer)(opt)
+  ;       Default: 8
+  ;      :closing/lookbehind (integer)(opt)
+  ;       Default: 8
+  ;      :closing/match (integer)(opt)
+  ;       Default: 64
+  ;      :opening/lookahead (integer)(opt)
+  ;       Default: 8
+  ;      :opening/lookbehind (integer)(opt)
+  ;       Default: 8
+  ;      :opening/match (integer)(opt)
+  ;       Default: 64}]]
   ; @param (map)(opt) options
   ; {:endpoint (integer)(opt)
   ;   Stops the interpreter at the given 'endpoint' position.
-  ;  :ignore-escaped? (boolean)(opt)
-  ;   TODO
-  ;   Default: true
   ;  :offset (integer)(opt)
   ;   Starts applying the given 'f' function at the given 'offset' position.
   ;   In order to make accurate tag map, the interpreter starts processing at the 0th position even if the 'offset' value is not 0.}
@@ -120,7 +111,7 @@
   ; (let [my-text     "abc(def(ghi))"
   ;       my-function #(if (= 8 (:cursor %2) %2 %1))
   ;       my-initial  nil
-  ;       my-tags     {:paren [#"\(" #"\)"]}]
+  ;       my-tags     [[:paren #"\(" #"\)"]]
   ;     (interpreter my-text my-function my-initial my-tags)
   ; =>
   ; {:actual-tags [{:name :paren :started-at 3 :opened-at 4}
@@ -131,7 +122,7 @@
   ; (let [my-text     "<div>Hello World!</div>"
   ;       my-function #(if (= 8 (:cursor %2) %2 %1))
   ;       my-initial  nil
-  ;       my-tags     {:div [#"<div>" #"</div>"]}]
+  ;       my-tags     [[:div #"\<div\>" #"\<\/div\>"]]
   ;     (interpreter my-text my-function my-initial my-tags)
   ; =>
   ; {:actual-tags [{:name :div :started-at 0 :opened-at 5}]

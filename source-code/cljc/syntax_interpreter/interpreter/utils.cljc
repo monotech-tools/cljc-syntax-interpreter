@@ -7,59 +7,66 @@
               [syntax-interpreter.core.config :as core.config]
               [vector.api                     :as vector]))
 
-;; -- Tag parameter functions -------------------------------------------------
+;; -- Tag details functions ---------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
-(defn tag-opening-pattern
+(defn tag-details->opening-pattern
   ; @ignore
   ;
   ; @description
-  ; Returns the given tag's opening pattern.
+  ; Derives the opening pattern from the given 'tag-details' vector.
   ;
-  ; @param (string) n
-  ; @param (map) tags
-  ; @param (map) options
-  ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (regex pattern)
-  [_ tags _ _ tag-name]
-  (if-let [opening-pattern (-> tags tag-name first)]
-          (if (regex/pattern? opening-pattern) opening-pattern)))
+  [[_ opening-pattern & _]]
+  (-> opening-pattern))
 
-(defn tag-closing-pattern
+(defn tag-details->closing-pattern
   ; @ignore
   ;
   ; @description
-  ; Returns the given tag's closing pattern (if provided).
+  ; Derives the closing pattern (if any) from the given 'tag-details' vector.
   ;
-  ; @param (string) n
-  ; @param (map) tags
-  ; @param (map) options
-  ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (regex pattern)
-  [_ tags _ _ tag-name]
-  (if-let [closing-pattern (-> tags tag-name second)]
-          (if (regex/pattern? closing-pattern) closing-pattern)))
+  [[_ _ closing-pattern & _]]
+  (if (-> closing-pattern regex/pattern?)
+      (-> closing-pattern)))
+
+(defn tag-details->options
+  ; @ignore
+  ;
+  ; @description
+  ; Derives the tag options map (if any) from the given 'tag-details' vector.
+  ;
+  ; @param (vector) tag-details
+  ;
+  ; @return (map)
+  [tag-details]
+  (if-let [tag-options (-> tag-details last)]
+          (if (map? tag-options) tag-options)))
+
+;; ----------------------------------------------------------------------------
+;; ----------------------------------------------------------------------------
 
 (defn tag-options
   ; @ignore
   ;
   ; @description
-  ; Returns the given tag's options map (if provided).
+  ; ...
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; @param (keyword) tag-name
   ;
   ; @return (map)
   [_ tags _ _ tag-name]
-  (if-let [tag-options (-> tags tag-name last)]
-          (if (map? tag-options) tag-options)))
+  (if-let [tag-details (vector/first-match tags (fn [[% & _]] (= % tag-name)))]
+          (tag-details->options tag-details)))
 
 (defn tag-omittag?
   ; @ignore
@@ -68,14 +75,16 @@
   ; Returns TRUE if the given tag doesn't have a closing pattern (omittag).
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; @param (keyword) tag-name
   ;
   ; @return (map)
   [n tags options state tag-name]
-  (-> (tag-closing-pattern n tags options state tag-name) nil?))
+  (if-let [tag-details (vector/first-match tags (fn [[% & _]] (= % tag-name)))]
+          (-> (tag-details->closing-pattern tag-details) nil?)
+          (-> false)))
 
 ;; -- Ancestor / parent tag functions -----------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -87,7 +96,7 @@
   ; Returns TRUE if there is no opened tag at the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -105,7 +114,7 @@
   ; Returns the depth of the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -124,7 +133,7 @@
   ; Returns the actual opened depth of a specific tag.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -144,7 +153,7 @@
   ; Returns the ancestor tags of the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -163,7 +172,7 @@
   ; Returns the parent tag of the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -182,7 +191,7 @@
   ; Returns TRUE the given tag is an opened ancestor tag of the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; @param (keyword) tag-name
@@ -198,7 +207,7 @@
   ; Returns TRUE if the given tag is the opened parent tag of the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; @param (keyword) tag-name
@@ -215,7 +224,7 @@
   ; Returns how many siblings have been already left behind by the interpreter within the actual parent tag.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -239,7 +248,7 @@
   ; Returns TRUE if the actual cursor position reached the given 'offset' position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; {:offset (integer)(opt)}
   ; @param (map) state
@@ -257,7 +266,7 @@
   ; Returns TRUE if the actual cursor position reached the given 'endpoint' position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; {:endpoint (integer)(opt)}
   ; @param (map) state
@@ -275,7 +284,7 @@
   ; Returns TRUE if the actual cursor position reached the last cursor position in the given 'n' string.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
@@ -291,7 +300,7 @@
   ; Returns TRUE if the 'stop' metafunction stopped the iteration.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
@@ -310,7 +319,7 @@
   ; Returns the disabling tag's name if the interpreter is disabled by an opened tag.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -329,7 +338,7 @@
   ; Returns TRUE if the interpreter is disabled by an opened tag.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -344,7 +353,7 @@
   ; Returns TRUE if the interpreter is NOT disabled by an opened tag.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -359,7 +368,7 @@
   ; Returns TRUE if any opening pattern's last found match is already started but not ended yet at the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -375,7 +384,7 @@
   ; Returns TRUE if any closing pattern's last found match is already started but not ended yet at the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)}
@@ -394,14 +403,14 @@
   ; Returns TRUE if the given tag requires no ancestor tags.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (if-let [tag-options (tag-options n tags options state tag-name)]
+  [n tags options state tag-details]
+  (if-let [tag-options (tag-details->options tag-details)]
           (-> tag-options :accepted-ancestors (= []))))
 
 (defn tag-requires-no-parents?
@@ -411,14 +420,14 @@
   ; Returns TRUE if the given tag requires no parent tags.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (if-let [tag-options (tag-options n tags options state tag-name)]
+  [n tags options state tag-details]
+  (if-let [tag-options (tag-details->options tag-details)]
           (-> tag-options :accepted-parents (= []))))
 
 (defn tag-requires-accepted-ancestor?
@@ -428,14 +437,14 @@
   ; Returns TRUE if the given tag requires any accepted ancestor tags.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (if-let [tag-options (tag-options n tags options state tag-name)]
+  [n tags options state tag-details]
+  (if-let [tag-options (tag-details->options tag-details)]
           (-> tag-options :accepted-ancestors vector/nonempty?)))
 
 (defn tag-requires-accepted-parent?
@@ -445,14 +454,14 @@
   ; Returns TRUE if the given tag requires any accepted ancestor tags.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (if-let [tag-options (tag-options n tags options state tag-name)]
+  [n tags options state tag-details]
+  (if-let [tag-options (tag-details->options tag-details)]
           (-> tag-options :accepted-parents vector/nonempty?)))
 
 (defn tag-any-accepted-ancestor-opened?
@@ -462,14 +471,14 @@
   ; Returns TRUE if at least one of the accepted ancestor tags of the given tag is opened.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (if-let [tag-options (tag-options n tags options state tag-name)]
+  [n tags options state tag-details]
+  (if-let [tag-options (tag-details->options tag-details)]
           (if-let [accepted-ancestors (:accepted-ancestors tag-options)]
                   (letfn [(f0 [accepted-ancestor] (tag-ancestor? n tags options state accepted-ancestor))]
                          (vector/any-item-matches? accepted-ancestors f0)))))
@@ -481,14 +490,14 @@
   ; Returns TRUE if at least one of the accepted parent tags of the given tag is opened (as the the actual parent tag).
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (if-let [tag-options (tag-options n tags options state tag-name)]
+  [n tags options state tag-details]
+  (if-let [tag-options (tag-details->options tag-details)]
           (if-let [accepted-parents (:accepted-parents tag-options)]
                   (letfn [(f0 [accepted-parent] (tag-parent? n tags options state accepted-parent))]
                          (vector/any-item-matches? accepted-parents f0)))))
@@ -500,17 +509,17 @@
   ; Returns TRUE if the actual cursor position meets the given tag's ancestor requirements.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (and (or (-> (tag-requires-no-ancestors?        n tags options state tag-name) not)
+  [n tags options state tag-details]
+  (and (or (-> (tag-requires-no-ancestors?        n tags options state tag-details) not)
            (-> (no-tags-opened?                   n tags options state)))
-       (or (-> (tag-requires-accepted-ancestor?   n tags options state tag-name) not)
-           (-> (tag-any-accepted-ancestor-opened? n tags options state tag-name)))))
+       (or (-> (tag-requires-accepted-ancestor?   n tags options state tag-details) not)
+           (-> (tag-any-accepted-ancestor-opened? n tags options state tag-details)))))
 
 (defn tag-parent-requirements-met?
   ; @ignore
@@ -519,17 +528,17 @@
   ; Returns TRUE if the actual cursor position meets the given tag's parent requirements.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (boolean)
-  [n tags options state tag-name]
-  (and (or (-> (tag-requires-no-parents?        n tags options state tag-name) not)
+  [n tags options state tag-details]
+  (and (or (-> (tag-requires-no-parents?        n tags options state tag-details) not)
            (-> (no-tags-opened?                 n tags options state)))
-       (or (-> (tag-requires-accepted-parent?   n tags options state tag-name) not)
-           (-> (tag-any-accepted-parent-opened? n tags options state tag-name)))))
+       (or (-> (tag-requires-accepted-parent?   n tags options state tag-details) not)
+           (-> (tag-any-accepted-parent-opened? n tags options state tag-details)))))
 
 ;; -- Regex functions ---------------------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -541,19 +550,19 @@
   ; Returns the the tag name and the found match if any opening pattern's match starts at the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (map)
   ; {:match (integer)
   ;  :name (keyword)}
-  [n tags options {:keys [cursor] :as state} tag-name]
+  [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
   ; Merging regex actions into one function decreases the interpreter processing time.
-  (if-let [opening-pattern (tag-opening-pattern n tags options state tag-name)]
-          (let [tag-options           (tag-options n tags options state tag-name)
+  (if-let [opening-pattern (tag-details->opening-pattern tag-details)]
+          (let [tag-options           (tag-details->options tag-details)
                 max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :opening/lookbehind])
                                           (get-in tag-options                     [:pattern-limits :lookbehind])
                                           (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookbehind]))
@@ -577,19 +586,19 @@
   ; Returns the the tag name and the found match if any closing pattern's match starts at the actual cursor position.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
-  ; @param (keyword) tag-name
+  ; @param (vector) tag-details
   ;
   ; @return (map)
   ; {:match (integer)
   ;  :name (keyword)}
-  [n tags options {:keys [cursor] :as state} tag-name]
+  [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
   ; Merging regex actions into one function decreases the interpreter processing time.
-  (if-let [closing-pattern (tag-closing-pattern n tags options state tag-name)]
-          (let [tag-options           (tag-options n tags options state tag-name)
+  (if-let [closing-pattern (tag-details->closing-pattern tag-details)]
+          (let [tag-options           (tag-details->options tag-details)
                 max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :closing/lookbehind])
                                           (get-in tag-options                     [:pattern-limits :lookbehind])
                                           (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookbehind]))
@@ -617,7 +626,7 @@
   ; and increasing the ':child-met' (how many children have been already reached by the cursor) value in the actual parent tag (if any).
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
@@ -656,7 +665,7 @@
   ; Updates the given 'state' by closing the actual parent tag in the 'actual-tags' vector.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)
@@ -692,7 +701,7 @@
   ; Removes the ':result' from the actual state, because the result is provided to the applied function in a separate parameter.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -710,7 +719,7 @@
   ; ...
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:cursor (integer)}
@@ -734,7 +743,7 @@
   ;   By default, it would be sorted by the ending positions if the ended tags were simply appended to the end of the vector.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; {:actual-tags (maps in vector)
@@ -761,7 +770,7 @@
   ; ...
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -769,16 +778,14 @@
   ; {:match (integer)
   ;  :name (keyword)}
   [n tags options state]
-  (letfn [(f0 [[tag-name _]] (if-let [opening-match (opening-match n tags options state tag-name)]
-                                     (and (tag-ancestor-requirements-met? n tags options state tag-name)
-                                          (tag-parent-requirements-met?   n tags options state tag-name)
-                                          (-> opening-match))))]
+  (letfn [(f0 [tag-details] (if-let [opening-match (opening-match n tags options state tag-details)]
+                                    (and (tag-ancestor-requirements-met? n tags options state tag-details)
+                                         (tag-parent-requirements-met?   n tags options state tag-details)
+                                         (-> opening-match))))]
          (and (-> (interpreter-enabled?       n tags options state))
               (-> (reading-any-opening-match? n tags options state) not)
               (-> (reading-any-closing-match? n tags options state) not)
-              (or (some f0 (map/filter-values tags (fn [tag] (-> tag last :priority               (= :high)))))
-                  (some f0 (map/filter-values tags (fn [tag] (-> tag last :priority (or :default) (= :default)))))
-                  (some f0 (map/filter-values tags (fn [tag] (-> tag last :priority               (= :low)))))))))
+              (some f0 tags))))
 
 (defn check-for-closing-match
   ; @ignore
@@ -787,7 +794,7 @@
   ; ...
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -798,7 +805,9 @@
   (and (-> (reading-any-opening-match? n tags options state) not)
        (-> (reading-any-closing-match? n tags options state) not)
        (if-let [parent-tag (parent-tag n tags options state)]
-               (closing-match n tags options state (:name parent-tag)))))
+               (letfn [(f0 [[tag-name & _]] (= tag-name (:name parent-tag)))]
+                      (let [tag-details (vector/last-match tags f0)]
+                           (closing-match n tags options state tag-details))))))
 
 (defn update-previous-state
   ; @ignore
@@ -807,7 +816,7 @@
   ; ...
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
@@ -827,7 +836,7 @@
   ; After the given 'f' function is applied, it stores the updated result in the actual 'state' map.
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ; @param (*) updated-result
@@ -849,7 +858,7 @@
   ; ...
   ;
   ; @param (string) n
-  ; @param (map) tags
+  ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
   ;
