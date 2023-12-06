@@ -776,9 +776,9 @@
          (and (-> (interpreter-enabled?       n tags options state))
               (-> (reading-any-opening-match? n tags options state) not)
               (-> (reading-any-closing-match? n tags options state) not)
-              (or (some f0 (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :high))))
-                  (some f0 (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :default))))
-                  (some f0 (map/filter-values tags (fn [[_ _ {:keys [priority] :or {priority :default}}]] (= priority :low))))))))
+              (or (some f0 (map/filter-values tags (fn [tag] (-> tag last :priority               (= :high)))))
+                  (some f0 (map/filter-values tags (fn [tag] (-> tag last :priority (or :default) (= :default)))))
+                  (some f0 (map/filter-values tags (fn [tag] (-> tag last :priority               (= :low)))))))))
 
 (defn check-for-closing-match
   ; @ignore

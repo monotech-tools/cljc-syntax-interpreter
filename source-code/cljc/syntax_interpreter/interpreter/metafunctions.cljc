@@ -101,10 +101,10 @@
   ; @return (function)
   [n tags options state]
   ; @description
-  ; Returns the parent tag of the actual cursor position.
+  ; Returns the parent tag name of the actual cursor position.
   ;
-  ; @return (map)
-  (fn [] (interpreter.utils/parent-tag n tags options state)))
+  ; @return (keyword)
+  (fn [] (:name (interpreter.utils/parent-tag n tags options state))))
 
 (defn tag-ancestor-f
   ; @ignore
