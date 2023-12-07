@@ -1,11 +1,11 @@
 
 (ns syntax-interpreter.interpreter.utils
-    (:require [map.api                        :as map :refer [update-by]]
-              [regex.api                      :as regex]
-              [seqable.api                    :as seqable :refer [last-dex]]
-              [string.api                     :as string]
-              [syntax-interpreter.core.config :as core.config]
-              [vector.api                     :as vector]))
+    (:require [fruits.map.api                 :as map :refer [update-by]]
+              [fruits.regex.api               :as regex]
+              [fruits.seqable.api             :as seqable :refer [last-dex]]
+              [fruits.string.api              :as string]
+              [fruits.vector.api              :as vector]
+              [syntax-interpreter.core.config :as core.config]))
 
 ;; -- Tag details functions ---------------------------------------------------
 ;; ----------------------------------------------------------------------------
