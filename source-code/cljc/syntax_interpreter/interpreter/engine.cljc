@@ -63,8 +63,8 @@
   ; @param (*) initial
   ; @param (vectors in vector)(opt)(in decreasing priority order) tags
   ; [[(keyword) tag-name
-  ;   (regex-pattern) pattern / opening-pattern
-  ;   (regex-pattern)(opt) closing-pattern
+  ;   (regex pattern) pattern / opening-pattern
+  ;   (regex pattern)(opt) closing-pattern
   ;   (map)(opt) options
   ;    {:accepted-ancestors (keywords in vector or empty vector)(opt)
   ;     Processes the tag only if at least one of the accepted ancestor tags is opened.

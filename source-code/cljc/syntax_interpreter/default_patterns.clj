@@ -10,8 +10,8 @@
 ; @constant (vectors in map)
 ; {:tag-name (vector)
 ;   [(keyword) tag-name
-;    (regex-pattern) pattern / opening-pattern
-;    (regex-pattern)(opt) closing-pattern
+;    (regex pattern) pattern / opening-pattern
+;    (regex pattern)(opt) closing-pattern
 ;    (map)(opt) options]}
 (def CLJ-PATTERNS
      {:symbol            [:symbol            #"[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"     {:pattern-limits {:lookbehind 0 :lookahead 1}}]
@@ -38,8 +38,8 @@
 ; @constant (vectors in map)
 ; {:tag-name (vector)
 ;   [(keyword) tag-name
-;    (regex-pattern) pattern / opening-pattern
-;    (regex-pattern)(opt) closing-pattern
+;    (regex pattern) pattern / opening-pattern
+;    (regex pattern)(opt) closing-pattern
 ;    (map)(opt) options]}
 (def CSS-PATTERNS
      {:class [:class #"(?<=[\n\r\s\t\}\]\)\*\~\>\+a-zA-Z\d\_\-])\.[a-zA-Z\d\_][a-zA-Z\d\_\-]{0,}(?<=[\n\r\s\t\{\[\*\~\>\:\.\#])" {:pattern-limits {:lookbehind 1 :lookahead 1}}]
