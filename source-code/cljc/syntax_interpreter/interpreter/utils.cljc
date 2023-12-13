@@ -51,11 +51,11 @@
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
-(defn tag-options
+(defn tag-details
   ; @ignore
   ;
   ; @description
-  ; ...
+  ; Returns the tag details of the given tag.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -63,9 +63,79 @@
   ; @param (map) state
   ; @param (keyword) tag-name
   ;
-  ; @return (map)
+  ; @example
+  ; (tag-details "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
+  ; =>
+  ; [:my-tag #"..." #"..." {...}]
+  ;
+  ; @return (vector)
   [_ tags _ _ tag-name]
-  (if-let [tag-details (vector/first-match tags (fn [[% & _]] (= % tag-name)))]
+  (vector/first-match tags (fn [[% & _]] (= % tag-name))))
+
+(defn tag-opening-pattern
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the tag opening pattern of the given tag.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; @param (keyword) tag-name
+  ;
+  ; @example
+  ; (tag-opening-pattern "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
+  ; =>
+  ; #"..."
+  ;
+  ; @return (regex pattern)
+  [n tags options state tag-name]
+  (if-let [tag-details (tag-details n tags options state tag-name)]
+          (tag-details->opening-pattern tag-details)))
+
+(defn tag-closing-pattern
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the tag closing pattern of the given tag.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; @param (keyword) tag-name
+  ;
+  ; @example
+  ; (tag-closing-pattern "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
+  ; =>
+  ; #"..."
+  ;
+  ; @return (regex pattern)
+  [n tags options state tag-name]
+  (if-let [tag-details (tag-details n tags options state tag-name)]
+          (tag-details->closing-pattern tag-details)))
+
+(defn tag-options
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the tag options of the given tag.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; @param (keyword) tag-name
+  ;
+  ; @example
+  ; (tag-options "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
+  ; =>
+  ; {...}
+  ;
+  ; @return (map)
+  [n tags options state tag-name]
+  (if-let [tag-details (tag-details n tags options state tag-name)]
           (tag-details->options tag-details)))
 
 (defn tag-omittag?
@@ -82,9 +152,7 @@
   ;
   ; @return (map)
   [n tags options state tag-name]
-  (if-let [tag-details (vector/first-match tags (fn [[% & _]] (= % tag-name)))]
-          (-> (tag-details->closing-pattern tag-details) nil?)
-          (-> false)))
+  (-> (tag-closing-pattern n tags options state tag-name) nil?))
 
 ;; -- Ancestor / parent tag functions -----------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -160,7 +228,7 @@
   ;
   ; @return (maps in vector)
   [_ _ _ {:keys [actual-tags]}]
-  (letfn [(f0 [{:keys [opened-at opens-at closed-at]}]
+  (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
               ; Tags that are already opened and aren't closed yet:
               (and (or opens-at opened-at) (not closed-at)))]
          (vector/keep-items-by actual-tags f0)))
@@ -179,10 +247,29 @@
   ;
   ; @return (map)
   [_ _ _ {:keys [actual-tags]}]
-  (letfn [(f0 [{:keys [opened-at opens-at closed-at]}]
+  (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
               ; Tags that are already opened and aren't closed yet:
               (and (or opens-at opened-at) (not closed-at)))]
          (vector/last-match actual-tags f0)))
+
+(defn tag-opened?
+  ; @ignore
+  ;
+  ; @description
+  ; Returns TRUE the given tag is opened.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; @param (keyword) tag-name
+  ;
+  ; @return (integer)
+  [_ _ _ {:keys [actual-tags]} tag-name]
+  (letfn [(f0 [{:keys [closed-at name opened-at opens-at]}]
+              ; Tags with a specific tag name that are already opened and aren't closed yet:
+              (and (= name tag-name) (or opens-at opened-at) (not closed-at)))]
+         (vector/any-item-matches? actual-tags f0)))
 
 (defn tag-ancestor?
   ; @ignore
@@ -198,7 +285,7 @@
   ;
   ; @return (integer)
   [n tags options state tag-name]
-  (< 0 (tag-depth n tags options state tag-name)))
+  (tag-opened? n tags options state tag-name))
 
 (defn tag-parent?
   ; @ignore
@@ -393,6 +480,81 @@
   [_ _ _ {:keys [actual-tags]}]
   (-> actual-tags last :will-end-at some?))
 
+;; -- Regex functions ---------------------------------------------------------
+;; ----------------------------------------------------------------------------
+
+(defn opening-match
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the the tag name and the found match if the given tag's opening match starts at the actual cursor position.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; {:cursor (integer)}
+  ; @param (vector) tag-details
+  ;
+  ; @return (map)
+  ; {:match (integer)
+  ;  :name (keyword)}
+  [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
+  ; Merging regex actions into one function decreases the interpreter processing time.
+  (if-let [opening-pattern (tag-details->opening-pattern tag-details)]
+          (let [tag-options           (tag-details->options tag-details)
+                max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :opening/lookbehind])
+                                          (get-in tag-options                     [:pattern-limits :lookbehind])
+                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookbehind]))
+                max-lookahead-length  (or (get-in tag-options                     [:pattern-limits :opening/lookahead])
+                                          (get-in tag-options                     [:pattern-limits :lookahead])
+                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookahead]))
+                max-match-length      (or (get-in tag-options                     [:pattern-limits :opening/match])
+                                          (get-in tag-options                     [:pattern-limits :match])
+                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
+                corrected-cursor      (min cursor max-lookbehind-length)
+                observed-from         (max (->    0) (- cursor max-lookbehind-length))
+                observed-to           (min (count n) (+ cursor max-match-length max-lookahead-length))
+                observed-part         (subs n observed-from observed-to)]
+               (if-let [opening-match (regex/re-from observed-part opening-pattern corrected-cursor)]
+                       {:name tag-name :match opening-match}))))
+
+(defn closing-match
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the the tag name and the found match if the given tag's closing match starts at the actual cursor position.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; {:cursor (integer)}
+  ; @param (vector) tag-details
+  ;
+  ; @return (map)
+  ; {:match (integer)
+  ;  :name (keyword)}
+  [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
+  ; Merging regex actions into one function decreases the interpreter processing time.
+  (if-let [closing-pattern (tag-details->closing-pattern tag-details)]
+          (let [tag-options           (tag-details->options tag-details)
+                max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :closing/lookbehind])
+                                          (get-in tag-options                     [:pattern-limits :lookbehind])
+                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookbehind]))
+                max-lookahead-length  (or (get-in tag-options                     [:pattern-limits :closing/lookahead])
+                                          (get-in tag-options                     [:pattern-limits :lookahead])
+                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookahead]))
+                max-match-length      (or (get-in tag-options                     [:pattern-limits :closing/match])
+                                          (get-in tag-options                     [:pattern-limits :match])
+                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
+                corrected-cursor      (min cursor max-lookbehind-length)
+                observed-from         (max (->    0) (- cursor max-lookbehind-length))
+                observed-to           (min (count n) (+ cursor max-match-length max-lookahead-length))
+                observed-part         (subs n observed-from observed-to)]
+               (if-let [closing-match (regex/re-from observed-part closing-pattern corrected-cursor)]
+                       {:name tag-name :match closing-match}))))
+
 ;; -- Tag processing requirement functions ------------------------------------
 ;; ----------------------------------------------------------------------------
 
@@ -540,80 +702,38 @@
        (or (-> (tag-requires-accepted-parent?   n tags options state tag-details) not)
            (-> (tag-any-accepted-parent-opened? n tags options state tag-details)))))
 
-;; -- Regex functions ---------------------------------------------------------
-;; ----------------------------------------------------------------------------
-
-(defn opening-match
+(defn tag-closes-instead?
   ; @ignore
-  ;
-  ; @description
-  ; Returns the the tag name and the found match if any opening pattern's match starts at the actual cursor position.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; {:cursor (integer)}
   ; @param (vector) tag-details
   ;
-  ; @return (map)
-  ; {:match (integer)
-  ;  :name (keyword)}
-  [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
-  ; Merging regex actions into one function decreases the interpreter processing time.
-  (if-let [opening-pattern (tag-details->opening-pattern tag-details)]
-          (let [tag-options           (tag-details->options tag-details)
-                max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :opening/lookbehind])
-                                          (get-in tag-options                     [:pattern-limits :lookbehind])
-                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookbehind]))
-                max-lookahead-length  (or (get-in tag-options                     [:pattern-limits :opening/lookahead])
-                                          (get-in tag-options                     [:pattern-limits :lookahead])
-                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookahead]))
-                max-match-length      (or (get-in tag-options                     [:pattern-limits :opening/match])
-                                          (get-in tag-options                     [:pattern-limits :match])
-                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
-                corrected-cursor      (min cursor max-lookbehind-length)
-                observed-from         (max (->    0) (- cursor max-lookbehind-length))
-                observed-to           (min (count n) (+ cursor max-match-length max-lookahead-length))
-                observed-part         (subs n observed-from observed-to)]
-               (if-let [opening-match (regex/re-from observed-part opening-pattern corrected-cursor)]
-                       {:name tag-name :match opening-match}))))
+  ; @return (boolean)
+  [n tags options state [tag-name & _ :as tag-details]]
+  (and (tag-opened?   n tags options state tag-name)
+       (closing-match n tags options state tag-details)))
 
-(defn closing-match
+(defn tag-not-closes-instead?
   ; @ignore
   ;
   ; @description
-  ; Returns the the tag name and the found match if any closing pattern's match starts at the actual cursor position.
+  ; - Returns TRUE if the given tag is not closing at the actual cursor position.
+  ; - When an opening match is found at a cursor position, it must be checked whether
+  ;   its closing match is also found at the same position in order to find the closing
+  ;   matches for symmetric tags (= opening and closing patterns match the same).
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
   ; @param (map) options
   ; @param (map) state
-  ; {:cursor (integer)}
   ; @param (vector) tag-details
   ;
-  ; @return (map)
-  ; {:match (integer)
-  ;  :name (keyword)}
-  [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
-  ; Merging regex actions into one function decreases the interpreter processing time.
-  (if-let [closing-pattern (tag-details->closing-pattern tag-details)]
-          (let [tag-options           (tag-details->options tag-details)
-                max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :closing/lookbehind])
-                                          (get-in tag-options                     [:pattern-limits :lookbehind])
-                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookbehind]))
-                max-lookahead-length  (or (get-in tag-options                     [:pattern-limits :closing/lookahead])
-                                          (get-in tag-options                     [:pattern-limits :lookahead])
-                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :lookahead]))
-                max-match-length      (or (get-in tag-options                     [:pattern-limits :closing/match])
-                                          (get-in tag-options                     [:pattern-limits :match])
-                                          (get-in core.config/DEFAULT-TAG-OPTIONS [:pattern-limits :match]))
-                corrected-cursor      (min cursor max-lookbehind-length)
-                observed-from         (max (->    0) (- cursor max-lookbehind-length))
-                observed-to           (min (count n) (+ cursor max-match-length max-lookahead-length))
-                observed-part         (subs n observed-from observed-to)]
-               (if-let [closing-match (regex/re-from observed-part closing-pattern corrected-cursor)]
-                       {:name tag-name :match closing-match}))))
+  ; @return (boolean)
+  [n tags options state tag-details]
+  (-> (tag-closes-instead? n tags options state tag-details) not))
 
 ;; -- Update child / parent tag functions -------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -781,6 +901,7 @@
   (letfn [(f0 [tag-details] (if-let [opening-match (opening-match n tags options state tag-details)]
                                     (and (tag-ancestor-requirements-met? n tags options state tag-details)
                                          (tag-parent-requirements-met?   n tags options state tag-details)
+                                         (tag-not-closes-instead?        n tags options state tag-details)
                                          (-> opening-match))))]
          (and (-> (interpreter-enabled?       n tags options state))
               (-> (reading-any-opening-match? n tags options state) not)
@@ -847,7 +968,7 @@
   [n tags options state updated-result]
   (cond (-> updated-result vector? not)              (-> state (assoc :result   (-> updated-result)))
         (-> updated-result first (= :$stop))         (-> state (assoc :result   (-> updated-result last) :cursor :iteration-stopped))
-        (-> updated-result first (= :$set-metadata)) (-> state (assoc :metadata (-> updated-result second))
+        (-> updated-result first (= :$use-metadata)) (-> state (assoc :metadata (-> updated-result second))
                                                                (assoc :result   (-> updated-result last)))
         :else                                        (-> state (assoc :result   (-> updated-result)))))
 

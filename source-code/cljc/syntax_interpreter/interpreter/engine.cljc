@@ -30,7 +30,7 @@
   ;   - (reading-any-closing-match?)
   ;   - (reading-any-opening-match?)
   ;   Operator metafunctions:
-  ;   - (set-metadata "My metadata" "My result")
+  ;   - (use-metadata "My metadata" "My result")
   ;   - (stop "My result")
   ;   Tag boundary metafunctions:
   ;   - (closing-tag)
@@ -53,6 +53,11 @@
   ;   Tag history metafunctions:
   ;   - (tag-left-count :my-tag)
   ;   - (tag-met-count  :my-tag)
+  ;   Tag details metafunctions:
+  ;   - (tag-details         :my-tag)
+  ;   - (tag-opening-pattern :my-tag)
+  ;   - (tag-closing-pattern :my-tag)
+  ;   - (tag-options         :my-tag)
   ;
   ; @param (string) n
   ; @param (function) f
@@ -155,7 +160,6 @@
            ;  :parent-tag (function)
            ;  :reading-any-closing-match? (function)
            ;  :reading-any-opening-match? (function)
-           ;  :set-metadata (function)
            ;  :starting-tag (function)
            ;  :stop (function)
            ;  :tag-ancestor? (function)
@@ -174,7 +178,8 @@
            ;  :tag-parent? (function)
            ;  :tag-started-at (function)
            ;  :tag-started? (function)
-           ;  :tag-starts? (function)}
+           ;  :tag-starts? (function)
+           ;  :use-metadata (function)}
            (f0 [state]
                {:ancestor-tags              (interpreter.metafunctions/ancestor-tags-f             n tags options state)
                 :closing-tag                (interpreter.metafunctions/closing-tag-f               n tags options state)
@@ -189,7 +194,6 @@
                 :parent-tag                 (interpreter.metafunctions/parent-tag-f                n tags options state)
                 :reading-any-closing-match? (interpreter.metafunctions/reading-any-closing-match-f n tags options state)
                 :reading-any-opening-match? (interpreter.metafunctions/reading-any-opening-match-f n tags options state)
-                :set-metadata               (interpreter.metafunctions/set-metadata-f              n tags options state)
                 :starting-tag               (interpreter.metafunctions/starting-tag-f              n tags options state)
                 :stop                       (interpreter.metafunctions/stop-f                      n tags options state)
                 :tag-ancestor?              (interpreter.metafunctions/tag-ancestor-f              n tags options state)
@@ -197,18 +201,23 @@
                 :tag-closed-at              (interpreter.metafunctions/tag-closed-at-f             n tags options state)
                 :tag-closed?                (interpreter.metafunctions/tag-closed-f                n tags options state)
                 :tag-closes?                (interpreter.metafunctions/tag-closes-f                n tags options state)
+                :tag-closing-pattern        (interpreter.metafunctions/tag-closing-pattern-f       n tags options state)
                 :tag-content                (interpreter.metafunctions/tag-content-f               n tags options state)
                 :tag-depth                  (interpreter.metafunctions/tag-depth-f                 n tags options state)
+                :tag-details                (interpreter.metafunctions/tag-details-f               n tags options state)
                 :tag-ends?                  (interpreter.metafunctions/tag-ends-f                  n tags options state)
                 :tag-left-count             (interpreter.metafunctions/tag-left-count-f            n tags options state)
                 :tag-met-count              (interpreter.metafunctions/tag-met-count-f             n tags options state)
                 :tag-opened-at              (interpreter.metafunctions/tag-opened-at-f             n tags options state)
                 :tag-opened?                (interpreter.metafunctions/tag-opened-f                n tags options state)
+                :tag-opening-pattern        (interpreter.metafunctions/tag-opening-pattern-f       n tags options state)
                 :tag-opens?                 (interpreter.metafunctions/tag-opens-f                 n tags options state)
+                :tag-options                (interpreter.metafunctions/tag-options-f               n tags options state)
                 :tag-parent?                (interpreter.metafunctions/tag-parent-f                n tags options state)
                 :tag-started-at             (interpreter.metafunctions/tag-started-at-f            n tags options state)
                 :tag-started?               (interpreter.metafunctions/tag-started-f               n tags options state)
-                :tag-starts?                (interpreter.metafunctions/tag-starts-f                n tags options state)})
+                :tag-starts?                (interpreter.metafunctions/tag-starts-f                n tags options state)
+                :use-metadata               (interpreter.metafunctions/use-metadata-f              n tags options state)})
 
            ; @description
            ; Returns the function that is applied by the interpreter in the actual iteration.

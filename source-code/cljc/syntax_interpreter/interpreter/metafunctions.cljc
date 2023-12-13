@@ -294,11 +294,11 @@
   ;  (*) result]
   (fn [result] [:$stop result]))
 
-(defn set-metadata-f
+(defn use-metadata-f
   ; @ignore
   ;
   ; @description
-  ; Returns the 'set-metadata' metafunction.
+  ; Returns the 'use-metadata' metafunction.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -314,14 +314,14 @@
   ; @param (*) result
   ;
   ; @usage
-  ; (set-metadata "This metadata will be available in the actual state from the next iteration."
+  ; (use-metadata "This metadata will be available in the actual state from the next iteration."
   ;               "This is the result of the current iteration")
   ;
   ; @return (vector)
-  ; [(keyword) set-metadata-marker
+  ; [(keyword) use-metadata-marker
   ;  (*) metadata
   ;  (*) result]
-  (fn [metadata result] [:$set-metadata metadata result]))
+  (fn [metadata result] [:$use-metadata metadata result]))
 
 ;; -- Tag boundary metafunctions ----------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -753,3 +753,90 @@
   (fn [tag-name] (letfn [(f0 [%] (-> % :name (= tag-name)))]
                         (+ (vector/match-count actual-tags f0)
                            (-> left-tags tag-name count)))))
+
+;; -- Tag details metafunctions -----------------------------------------------
+;; ----------------------------------------------------------------------------
+
+(defn tag-details-f
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the 'tag-details' metafunction.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ;
+  ; @return (function)
+  [n tags options state]
+  ; @description
+  ; Returns the tag details of the given tag.
+  ;
+  ; @param (keyword) tag-name
+  ;
+  ; @return (vector)
+  (fn [tag-name] (interpreter.utils/tag-details n tags options state tag-name)))
+
+(defn tag-opening-pattern-f
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the 'tag-opening-pattern' metafunction.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ;
+  ; @return (function)
+  [n tags options state]
+  ; @description
+  ; Returns the tag opening pattern of the given tag.
+  ;
+  ; @param (keyword) tag-name
+  ;
+  ; @return (regex pattern)
+  (fn [tag-name] (interpreter.utils/tag-opening-pattern n tags options state tag-name)))
+
+(defn tag-closing-pattern-f
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the 'tag-closing-pattern' metafunction.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ;
+  ; @return (function)
+  [n tags options state]
+  ; @description
+  ; Returns the tag closing pattern of the given tag.
+  ;
+  ; @param (keyword) tag-name
+  ;
+  ; @return (regex pattern)
+  (fn [tag-name] (interpreter.utils/tag-closing-pattern n tags options state tag-name)))
+
+(defn tag-options-f
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the 'tag-options' metafunction.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ;
+  ; @return (function)
+  [n tags options state]
+  ; @description
+  ; Returns the tag options of the given tag.
+  ;
+  ; @param (keyword) tag-name
+  ;
+  ; @return (regex pattern)
+  (fn [tag-name] (interpreter.utils/tag-options n tags options state tag-name)))
