@@ -14,14 +14,14 @@
 ;    (regex pattern)(opt) closing-pattern
 ;    (map)(opt) options]}
 (def CLJ-PATTERNS
-     {:symbol            [:symbol            #"[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"     {:pattern-limits {:lookbehind 0 :lookahead 1}}]
-      :meta-symbol       [:meta-symbol       #"\^[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
-      :derefed-symbol    [:derefed-symbol    #"\@[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
-      :unresolved-symbol [:unresolved-symbol #"\'[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
-      :var               [:var               #"\#\'[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])" {:pattern-limits {:lookbehind 0 :lookahead 1}}]
-      :keyword           [:keyword           #"\:[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{1,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"                                   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
-      :meta-keyword      [:meta-keyword      #"\^\:[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{1,}(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"                                 {:pattern-limits {:lookbehind 0 :lookahead 1}}]
-      :boolean           [:boolean           #"true|false(?=[\n\r\s\t\[\]\(\)\{\}\"\@\~])"          {:pattern-limits {:lookbehind 0 :match 5                          :lookahead 1}}]
+     {:symbol            [:symbol            #"[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])"     {:pattern-limits {:lookbehind 0 :lookahead 1}}]
+      :meta-symbol       [:meta-symbol       #"\^[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
+      :derefed-symbol    [:derefed-symbol    #"\@[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
+      :unresolved-symbol [:unresolved-symbol #"\'[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
+      :var               [:var               #"\#\'[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])" {:pattern-limits {:lookbehind 0 :lookahead 1}}]
+      :keyword           [:keyword           #"\:[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{1,}(?=[\s\[\]\(\)\{\}\"\@\~])"                                   {:pattern-limits {:lookbehind 0 :lookahead 1}}]
+      :meta-keyword      [:meta-keyword      #"\^\:[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{1,}(?=[\s\[\]\(\)\{\}\"\@\~])"                                 {:pattern-limits {:lookbehind 0 :lookahead 1}}]
+      :boolean           [:boolean           #"true|false(?=[\s\[\]\(\)\{\}\"\@\~])"                {:pattern-limits {:lookbehind 0 :match 5                          :lookahead 1}}]
       :conditional-form  [:conditional-form  #"\#\?\(\:clj[s]{0,}" #"\)"                            {:pattern-limits {:lookbehind 0 :opening/match 8 :closing/match 1 :lookahead 0}}]
       :list              [:list              #"\("                 #"\)"                            {:pattern-limits {:lookbehind 0 :match 1                          :lookahead 0}}]
       :map               [:map               #"\{"                 #"\}"                            {:pattern-limits {:lookbehind 0 :match 1                          :lookahead 0}}]
@@ -42,6 +42,6 @@
 ;    (regex pattern)(opt) closing-pattern
 ;    (map)(opt) options]}
 (def CSS-PATTERNS
-     {:class [:class #"(?<=[\n\r\s\t\}\]\)\*\~\>\+a-zA-Z\d\_\-])\.[a-zA-Z\d\_][a-zA-Z\d\_\-]{0,}(?<=[\n\r\s\t\{\[\*\~\>\:\.\#])" {:pattern-limits {:lookbehind 1 :lookahead 1}}]
-      :id    [:id    #"(?<=[\n\r\s\t\}\]\)\*\~\>\+a-zA-Z\d\_\-])\#[a-zA-Z\d\_][a-zA-Z\d\_\-]{0,}(?<=[\n\r\s\t\{\[\*\~\>\:\.\#])" {:pattern-limits {:lookbehind 1 :lookahead 1}}]
-      :tag   [:tag   #"(?<=[\n\r\s\t\}\]\)\*\~\>\+a-zA-Z\d\_\-])[a-zA-Z]{1,}(?<=[\n\r\s\t\{\[\*\~\>\:\.\#])"                     {:pattern-limits {:lookbehind 1 :lookahead 1}}]})
+     {:class [:class #"(?<=[\s\}\]\)\*\~\>\+a-zA-Z\d\_\-])\.[a-zA-Z\d\_][a-zA-Z\d\_\-]{0,}(?<=[\s\{\[\*\~\>\:\.\#])" {:pattern-limits {:lookbehind 1 :lookahead 1}}]
+      :id    [:id    #"(?<=[\s\}\]\)\*\~\>\+a-zA-Z\d\_\-])\#[a-zA-Z\d\_][a-zA-Z\d\_\-]{0,}(?<=[\s\{\[\*\~\>\:\.\#])" {:pattern-limits {:lookbehind 1 :lookahead 1}}]
+      :tag   [:tag   #"(?<=[\s\}\]\)\*\~\>\+a-zA-Z\d\_\-])[a-zA-Z]{1,}(?<=[\s\{\[\*\~\>\:\.\#])"                     {:pattern-limits {:lookbehind 1 :lookahead 1}}]})
