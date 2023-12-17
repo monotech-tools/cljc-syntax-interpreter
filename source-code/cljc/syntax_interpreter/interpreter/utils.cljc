@@ -63,7 +63,7 @@
   ; @param (map) state
   ; @param (keyword) tag-name
   ;
-  ; @example
+  ; @usage
   ; (tag-details "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
   ; =>
   ; [:my-tag #"..." #"..." {...}]
@@ -84,7 +84,7 @@
   ; @param (map) state
   ; @param (keyword) tag-name
   ;
-  ; @example
+  ; @usage
   ; (tag-opening-pattern "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
   ; =>
   ; #"..."
@@ -106,7 +106,7 @@
   ; @param (map) state
   ; @param (keyword) tag-name
   ;
-  ; @example
+  ; @usage
   ; (tag-closing-pattern "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
   ; =>
   ; #"..."
@@ -128,7 +128,7 @@
   ; @param (map) state
   ; @param (keyword) tag-name
   ;
-  ; @example
+  ; @usage
   ; (tag-options "..." [[:my-tag #"..." #"..." {...}]] {...} {...} :my-tag)
   ; =>
   ; {...}
@@ -480,6 +480,31 @@
   [_ _ _ {:keys [actual-tags]}]
   (-> actual-tags last :will-end-at some?))
 
+(defn reading-any-match?
+  ; @ignore
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ;
+  ; @return (boolean)
+  [n tags options state]
+  (or (reading-any-opening-match? n tags options state)
+      (reading-any-closing-match? n tags options state)))
+
+(defn not-reading-any-match?
+  ; @ignore
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ;
+  ; @return (boolean)
+  [n tags options state]
+  (-> (reading-any-match? n tags options state) not))
+
 ;; -- Regex functions ---------------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
@@ -500,7 +525,7 @@
   ; {:match (integer)
   ;  :name (keyword)}
   [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
-  ; Merging regex actions into one function decreases the interpreter processing time.
+  ; Merging regex actions into one function decreased the interpreter processing time.
   (if-let [opening-pattern (tag-details->opening-pattern tag-details)]
           (let [tag-options           (tag-details->options tag-details)
                 max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :opening/lookbehind])
@@ -536,7 +561,7 @@
   ; {:match (integer)
   ;  :name (keyword)}
   [n tags options {:keys [cursor] :as state} [tag-name :as tag-details]]
-  ; Merging regex actions into one function decreases the interpreter processing time.
+  ; Merging regex actions into one function decreased the interpreter processing time.
   (if-let [closing-pattern (tag-details->closing-pattern tag-details)]
           (let [tag-options           (tag-details->options tag-details)
                 max-lookbehind-length (or (get-in tag-options                     [:pattern-limits :closing/lookbehind])
@@ -754,7 +779,7 @@
   ; {:match (string)
   ;  :name (keyword)}
   ;
-  ; @example
+  ; @usage
   ; (start-child-tag "..." {...} {...}
   ;                  {:cursor 7 :actual-tags [{:name :paren :started-at 1 :opened-at 2 :child-met 1}
   ;                                           {:name :paren :started-at 4 :opened-at 5 :child-met 0}]}
@@ -794,7 +819,7 @@
   ; {:match (string)
   ;  :name (keyword)}
   ;
-  ; @example
+  ; @usage
   ; (close-parent-tag "..." {...} {...}
   ;                   {:cursor 10 :actual-tags [{:name :paren :started-at 1 :opened-at 2}
   ;                                             {:name :paren :started-at 4 :opened-at 5}
@@ -903,9 +928,8 @@
                                          (tag-parent-requirements-met?   n tags options state tag-details)
                                          (tag-not-closes-instead?        n tags options state tag-details)
                                          (-> opening-match))))]
-         (and (-> (interpreter-enabled?       n tags options state))
-              (-> (reading-any-opening-match? n tags options state) not)
-              (-> (reading-any-closing-match? n tags options state) not)
+         (and (interpreter-enabled?   n tags options state)
+              (not-reading-any-match? n tags options state)
               (some f0 tags))))
 
 (defn check-for-closing-match
@@ -923,8 +947,7 @@
   ; {:match (integer)
   ;  :name (keyword)}
   [n tags options state]
-  (and (-> (reading-any-opening-match? n tags options state) not)
-       (-> (reading-any-closing-match? n tags options state) not)
+  (and (not-reading-any-match? n tags options state)
        (if-let [parent-tag (parent-tag n tags options state)]
                (letfn [(f0 [[tag-name & _]] (= tag-name (:name parent-tag)))]
                       (let [tag-details (vector/last-match tags f0)]

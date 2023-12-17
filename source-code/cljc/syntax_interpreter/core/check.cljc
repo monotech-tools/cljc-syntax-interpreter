@@ -13,18 +13,17 @@
   ;
   ; @usage
   ; (position-escaped? "My string\n" 10)
-  ;
-  ; @example
-  ; (position-escaped? "My string\n" 10)
   ; =>
   ; true
   ;
-  ; @example
+  ; @usage
   ; (position-escaped? "My string\n" 9)
   ; =>
   ; false
   ;
   ; @return (boolean)
   [n cursor]
+  ; A cursor position is not escaped in case of even number of escape characters precede it.
+  ; E.g., Escaped escape character: \\
   (and (-> cursor zero? not)
        (= "\\" (subs n (dec cursor) cursor))))

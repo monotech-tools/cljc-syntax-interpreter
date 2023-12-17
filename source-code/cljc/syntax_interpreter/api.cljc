@@ -6,9 +6,9 @@
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
-; @redirect (syntax-reader.default-patterns)
+; @redirect (syntax-interpreter.default-patterns/*)
 (def CLJ-PATTERNS default-patterns/CLJ-PATTERNS)
 (def CSS-PATTERNS default-patterns/CSS-PATTERNS)
 
-; @redirect (syntax-reader.interpreter.engine)
+; @redirect (syntax-interpreter.interpreter.engine/*)
 (def interpreter interpreter.engine/interpreter)

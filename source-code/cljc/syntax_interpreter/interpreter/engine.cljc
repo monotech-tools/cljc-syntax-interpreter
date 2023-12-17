@@ -9,11 +9,11 @@
 (defn interpreter
   ; @description
   ; - Applies the given 'f' function at each cursor position of the given 'n' string.
-  ; - Provides a state of the actual cursor position and a set of metafunctions, for the applied function.
-  ; - The provided state contains the 'actual-tags' vector that describes the opened tags at the actual cursor position
-  ;   and contains the 'left-tags' map that contains every tag that have been already ended at the actual cursor position and
-  ;   already removed from the 'actual-tags' vector.
-  ; - Metafunctions that are available within the applied 'f' function:
+  ; - Provides a state of the actual position and a set of metafunctions for the applied function.
+  ; - The provided state contains the 'actual-tags' vector that describes the opened tags at the actual position
+  ;   and contains the 'left-tags' map that contains tags that are already ended before the actual position and
+  ;   removed from the 'actual-tags' vector.
+  ; - Available metafunctions within the applied 'f' function:
   ;   Ancestor / parent tag metafunctions:
   ;   - (ancestor-tags)
   ;   - (depth)
@@ -80,23 +80,24 @@
   ;    :disable-interpreter? (boolean)(opt)
   ;     Disables processing of other tags whithin the tag (e.g., for comments, quotes, etc).
   ;    :pattern-limits (map)(opt)
-  ;     Limited pattern lookaround and match lengths help decrease the processing time.
+  ;     Limited pattern lookaround and match lengths help decrease the processing time
+  ;     and help create more accurate matches for tag patterns with lookaround assertions.
   ;     {:lookahead (integer)(opt)
-  ;       Default: 8
+  ;       Default: 0
   ;      :lookbehind (integer)(opt)
-  ;       Default: 8
+  ;       Default: 0
   ;      :match (integer)(opt)
   ;       Default: 64
   ;      :closing/lookahead (integer)(opt)
-  ;       Default: 8
+  ;       Default: 0
   ;      :closing/lookbehind (integer)(opt)
-  ;       Default: 8
+  ;       Default: 0
   ;      :closing/match (integer)(opt)
   ;       Default: 64
   ;      :opening/lookahead (integer)(opt)
-  ;       Default: 8
+  ;       Default: 0
   ;      :opening/lookbehind (integer)(opt)
-  ;       Default: 8
+  ;       Default: 0
   ;      :opening/match (integer)(opt)
   ;       Default: 64}]]
   ; @param (map)(opt) options
@@ -104,7 +105,7 @@
   ;   Stops the interpreter at the given 'endpoint' position.
   ;  :offset (integer)(opt)
   ;   Starts applying the given 'f' function at the given 'offset' position.
-  ;   In order to make accurate tag map, the interpreter starts processing at the 0th position even if the 'offset' value is not 0.}
+  ;   In order to make accurate tag map, the interpreter starts processing at the 0th position even if the 'offset' value is higher than 0.}
   ;
   ; @usage
   ; (interpreter "My string" (fn [result state metafunctions]) nil)
@@ -112,9 +113,9 @@
   ; @usage
   ; (interpreter "My string" println nil)
   ;
-  ; @example
+  ; @usage
   ; (let [my-text     "abc(def(ghi))"
-  ;       my-function #(if (= 8 (:cursor %2) %2 %1))
+  ;       my-function (fn [result state _] (if (= 8 (:cursor state)) state result)
   ;       my-initial  nil
   ;       my-tags     [[:paren #"\(" #"\)"]]
   ;     (interpreter my-text my-function my-initial my-tags)
@@ -123,9 +124,9 @@
   ;                {:name :paren :started-at 7 :opened-at 8}]
   ;  :cursor 8}
   ;
-  ; @example
+  ; @usage
   ; (let [my-text     "<div>Hello World!</div>"
-  ;       my-function #(if (= 8 (:cursor %2) %2 %1))
+  ;       my-function (fn [result state _] (if (= 8 (:cursor state)) state result)
   ;       my-initial  nil
   ;       my-tags     [[:div #"\<div\>" #"\<\/div\>"]]
   ;     (interpreter my-text my-function my-initial my-tags)
@@ -235,6 +236,7 @@
           ; ...
           (let [initial-state {:actual-tags [] :left-tags {} :cursor 0 :result initial}]
                (loop [{:keys [result] :as state} initial-state]
+
                      (let [actual-state           (interpreter.utils/update-previous-state n tags options state)
                            provided-state         (interpreter.utils/filter-provided-state n tags options actual-state)
                            provided-metafunctions (-> actual-state f0)
