@@ -170,63 +170,6 @@
 ;; -- Interpreter metafunctions -----------------------------------------------
 ;; ----------------------------------------------------------------------------
 
-(defn interpreter-disabled-by-f
-  ; @ignore
-  ;
-  ; @description
-  ; Returns the 'interpreter-disabled-by' metafunction.
-  ;
-  ; @param (string) n
-  ; @param (vectors in vector) tags
-  ; @param (map) options
-  ; @param (map) state
-  ;
-  ; @return (function)
-  [n tags options state]
-  ; @description
-  ; Returns the disabling tag's name if the interpreter is disabled by an opened tag.
-  ;
-  ; @return (keyword)
-  (fn [] (interpreter.utils/interpreter-disabled-by n tags options state)))
-
-(defn interpreter-disabled-f
-  ; @ignore
-  ;
-  ; @description
-  ; Returns the 'interpreter-disabled?' metafunction.
-  ;
-  ; @param (string) n
-  ; @param (vectors in vector) tags
-  ; @param (map) options
-  ; @param (map) state
-  ;
-  ; @return (function)
-  [n tags options state]
-  ; @description
-  ; Returns TRUE if the interpreter is disabled by an opened tag.
-  ;
-  ; @return (boolean)
-  (fn [] (interpreter.utils/interpreter-disabled? n tags options state)))
-
-(defn interpreter-enabled-f
-  ; @ignore
-  ;
-  ; @description
-  ; Returns the 'interpreter-enabled?' metafunction.
-  ;
-  ; @param (string) n
-  ; @param (vectors in vector) tags
-  ; @param (map) options
-  ; @param (map) state
-  ;
-  ; @return (function)
-  [n tags options state]
-  ; @description
-  ; Returns TRUE if the interpreter is NOT disabled by an opened tag.
-  ;
-  ; @return (boolean)
-  (fn [] (interpreter.utils/interpreter-enabled? n tags options state)))
-
 (defn reading-any-opening-match-f
   ; @ignore
   ;
@@ -241,7 +184,7 @@
   ; @return (function)
   [n tags options state]
   ; @description
-  ; Returns TRUE if any opening pattern's last found match is already started but not ended yet at the actual cursor position.
+  ; Returns TRUE if the last found opening pattern match is already started but not ended yet at the actual cursor position.
   ;
   ; @return (boolean)
   (fn [] (interpreter.utils/reading-any-opening-match? n tags options state)))
@@ -260,10 +203,29 @@
   ; @return (function)
   [n tags options state]
   ; @description
-  ; Returns TRUE if any closing pattern's last found match is already started but not ended yet at the actual cursor position.
+  ; Returns TRUE if the last found closing pattern match is already started but not ended yet at the actual cursor position.
   ;
   ; @return (boolean)
   (fn [] (interpreter.utils/reading-any-closing-match? n tags options state)))
+
+(defn reading-any-match-f
+  ; @ignore
+  ;
+  ; @description
+  ; Returns the 'reading-any-match?' metafunction.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ;
+  ; @return (function)
+  [n tags options state]
+  ; @description
+  ; Returns TRUE if the last found opening / closing pattern match is already started but not ended yet at the actual cursor position.
+  ;
+  ; @return (boolean)
+  (fn [] (interpreter.utils/reading-any-match? n tags options state)))
 
 ;; -- Operator metafunctions --------------------------------------------------
 ;; ----------------------------------------------------------------------------

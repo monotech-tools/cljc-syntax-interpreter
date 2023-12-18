@@ -44,16 +44,16 @@
       :var               [:var               #"\#\'[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])" {:pattern-limits {:lookahead 1}}]
       :keyword           [:keyword           #"\:[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{1,}(?=[\s\[\]\(\)\{\}\"\@\~])"                                   {:pattern-limits {:lookahead 1}}]
       :meta-keyword      [:meta-keyword      #"\^\:[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{1,}(?=[\s\[\]\(\)\{\}\"\@\~])"                                 {:pattern-limits {:lookahead 1}}]
-      :boolean           [:boolean           #"true|false(?=[\s\[\]\(\)\{\}\"\@\~])"                          {:pattern-limits {:match 5 :lookahead 1}}]
-      :conditional-form  [:conditional-form  #"\#\?\(\:clj[s]{0,}" #"\)"                                      {:pattern-limits {:opening/match 8 :closing/match 1}}]
-      :list              [:list              #"\("                 #"\)"                                      {:pattern-limits {:opening/match 1 :closing/match 1}}]
-      :map               [:map               #"\{"                 #"\}"                                      {:pattern-limits {:opening/match 1 :closing/match 1}}]
-      :meta-map          [:meta-map          #"\^\{"               #"\}"                                      {:pattern-limits {:opening/match 2 :closing/match 1}}]
-      :vector            [:vector            #"\["                 #"\]"                                      {:pattern-limits {:opening/match 1 :closing/match 1}}]
-      :comment           [:comment           #";"                  #"\n"           {:disable-interpreter? true :pattern-limits {:opening/match 1 :closing/match 1}}]
-      :regex-pattern     [:regex-pattern     #"\#\""               #"(?<=[^\\])\"" {:disable-interpreter? true :pattern-limits {:opening/match 2 :closing/match 1 :closing/lookbehind 1}}]
-      :string            [:string            #"\""                 #"(?<=[^\\])\"" {:disable-interpreter? true :pattern-limits {:opening/match 1 :closing/match 1 :closing/lookbehind 1}}]
-      :meta-string       [:meta-string       #"\^\""               #"(?<=[^\\])\"" {:disable-interpreter? true :pattern-limits {:opening/match 2 :closing/match 1 :closing/lookbehind 1}}]})
+      :boolean           [:boolean           #"true|false(?=[\s\[\]\(\)\{\}\"\@\~])"                     {:pattern-limits {:match 5 :lookahead 1}}]
+      :conditional-form  [:conditional-form  #"\#\?\(\:clj[s]{0,}" #"\)"                                 {:pattern-limits {:opening/match 8 :closing/match 1}}]
+      :list              [:list              #"\("                 #"\)"                                 {:pattern-limits {:opening/match 1 :closing/match 1}}]
+      :map               [:map               #"\{"                 #"\}"                                 {:pattern-limits {:opening/match 1 :closing/match 1}}]
+      :meta-map          [:meta-map          #"\^\{"               #"\}"                                 {:pattern-limits {:opening/match 2 :closing/match 1}}]
+      :vector            [:vector            #"\["                 #"\]"                                 {:pattern-limits {:opening/match 1 :closing/match 1}}]
+      :comment           [:comment           #";"                  #"\n"           {:accepted-children [] :pattern-limits {:opening/match 1 :closing/match 1}}]
+      :regex-pattern     [:regex-pattern     #"\#\""               #"(?<=[^\\])\"" {:accepted-children [] :pattern-limits {:opening/match 2 :closing/match 1 :closing/lookbehind 1}}]
+      :string            [:string            #"\""                 #"(?<=[^\\])\"" {:accepted-children [] :pattern-limits {:opening/match 1 :closing/match 1 :closing/lookbehind 1}}]
+      :meta-string       [:meta-string       #"\^\""               #"(?<=[^\\])\"" {:accepted-children [] :pattern-limits {:opening/match 2 :closing/match 1 :closing/lookbehind 1}}]})
 
 ; @note
 ; Lookbehind, lookahead and match length limits help decrease the processing time,

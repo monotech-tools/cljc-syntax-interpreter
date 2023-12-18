@@ -26,14 +26,18 @@
   ;   (regex pattern) pattern / opening-pattern
   ;   (regex pattern)(opt) closing-pattern
   ;   (map)(opt) options
-  ;    {:accepted-ancestors (keywords in vector or empty vector)(opt)
+  ;   {:accepted-ancestors (keywords in vector or empty vector)(opt)
   ;     Processes the tag only if at least one of the accepted ancestor tags is opened.
   ;     Leave this vector empty for tags that are processed only if they have no ancestor tags.
+  ;    :accepted-children (keywords in vector or empty vector)(opt)
+  ;     Processes child tags only if listed in this vector.
+  ;     Leave this vector empty for void tags that cannot have children.
+  ;    :accepted-descendants (keywords in vector or empty vector)(opt)
+  ;     Processes descendant tags only if listed in this vector.
+  ;     Leave this vector empty for void tags that cannot have descendants.
   ;    :accepted-parents (keywords in vector or empty vector)(opt)
   ;     Processes the tag only if at least one of the accepted parent tags is opened.
   ;     Leave this vector empty for tags that are processed only if they have no parent tags.
-  ;    :disable-interpreter? (boolean)(opt)
-  ;     Disables processing of other tags whithin the tag (e.g., for comments, quotes, etc).
   ;    :pattern-limits (map)(opt)
   ;     Limited pattern lookaround and match lengths help decrease the processing time
   ;     and help create more accurate matches for tag patterns with lookaround assertions.
@@ -107,15 +111,13 @@
            ;  :closing-tag (function)
            ;  :depth (function)
            ;  :ending-tag (function)
-           ;  :interpreter-disabled-by (function)
-           ;  :interpreter-disabled? (function)
-           ;  :interpreter-enabled? (function)
            ;  :left-sibling-count (function)
            ;  :no-tags-opened? (function)
            ;  :opening-tag (function)
            ;  :parent-tag (function)
            ;  :reading-any-closing-match? (function)
            ;  :reading-any-opening-match? (function)
+           ;  :reading-any-match? (function)
            ;  :starting-tag (function)
            ;  :stop (function)
            ;  :tag-ancestor? (function)
@@ -141,15 +143,13 @@
                 :closing-tag                (interpreter.metafunctions/closing-tag-f               n tags options state)
                 :depth                      (interpreter.metafunctions/depth-f                     n tags options state)
                 :ending-tag                 (interpreter.metafunctions/ending-tag-f                n tags options state)
-                :interpreter-disabled-by    (interpreter.metafunctions/interpreter-disabled-by-f   n tags options state)
-                :interpreter-disabled?      (interpreter.metafunctions/interpreter-disabled-f      n tags options state)
-                :interpreter-enabled?       (interpreter.metafunctions/interpreter-enabled-f       n tags options state)
                 :left-sibling-count         (interpreter.metafunctions/left-sibling-count-f        n tags options state)
                 :no-tags-opened?            (interpreter.metafunctions/no-tags-opened-f            n tags options state)
                 :opening-tag                (interpreter.metafunctions/opening-tag-f               n tags options state)
                 :parent-tag                 (interpreter.metafunctions/parent-tag-f                n tags options state)
                 :reading-any-closing-match? (interpreter.metafunctions/reading-any-closing-match-f n tags options state)
                 :reading-any-opening-match? (interpreter.metafunctions/reading-any-opening-match-f n tags options state)
+                :reading-any-match?         (interpreter.metafunctions/reading-any-match-f         n tags options state)
                 :starting-tag               (interpreter.metafunctions/starting-tag-f              n tags options state)
                 :stop                       (interpreter.metafunctions/stop-f                      n tags options state)
                 :tag-ancestor?              (interpreter.metafunctions/tag-ancestor-f              n tags options state)
@@ -191,7 +191,6 @@
           ; ...
           (let [initial-state {:actual-tags [] :left-tags {} :cursor 0 :result initial}]
                (loop [{:keys [result] :as state} initial-state]
-
                      (let [actual-state           (interpreter.utils/update-previous-state n tags options state)
                            provided-state         (interpreter.utils/filter-provided-state n tags options actual-state)
                            provided-metafunctions (-> actual-state f0)

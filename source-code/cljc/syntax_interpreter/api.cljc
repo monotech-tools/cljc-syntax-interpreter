@@ -1,7 +1,8 @@
 
 (ns syntax-interpreter.api
     (:require [syntax-interpreter.default-patterns   :as default-patterns]
-              [syntax-interpreter.interpreter.engine :as interpreter.engine]))
+              [syntax-interpreter.interpreter.engine :as interpreter.engine]
+              [syntax-interpreter.core.utils :as core.utils]))
 
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -72,11 +73,9 @@
 ; @code
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
-;                  ((:interpreter-disabled-by    metafunctions))
-;                  ((:interpreter-disabled?      metafunctions))
-;                  ((:interpreter-enabled?       metafunctions))
 ;                  ((:reading-any-closing-match? metafunctions))
-;                  ((:reading-any-opening-match? metafunctions)))
+;                  ((:reading-any-opening-match? metafunctions))
+;                  ((:reading-any-match?         metafunctions)))
 ;              nil
 ;              [[:my-tag #"..."]])
 ;
@@ -148,6 +147,9 @@
 
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
+
+; @redirect (syntax-interpreter.interpreter.core.utils/*)
+(def with-options core.utils/with-options)
 
 ; @redirect (syntax-interpreter.default-patterns/*)
 (def CLJ-PATTERNS default-patterns/CLJ-PATTERNS)

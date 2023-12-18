@@ -399,60 +399,11 @@
 ;; -- Interpreter functions ---------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
-(defn interpreter-disabled-by
-  ; @ignore
-  ;
-  ; @description
-  ; Returns the disabling tag's name if the interpreter is disabled by an opened tag.
-  ;
-  ; @param (string) n
-  ; @param (vectors in vector) tags
-  ; @param (map) options
-  ; @param (map) state
-  ; {:actual-tags (maps in vector)}
-  ;
-  ; @return (keyword)
-  [n tags options {:keys [actual-tags] :as state}]
-  (if-let [parent-tag (parent-tag n tags options state)]
-          (if-let [tag-options (tag-options n tags options state (:name parent-tag))]
-                  (if (:disable-interpreter? tag-options)
-                      (:name parent-tag)))))
-
-(defn interpreter-disabled?
-  ; @ignore
-  ;
-  ; @description
-  ; Returns TRUE if the interpreter is disabled by an opened tag.
-  ;
-  ; @param (string) n
-  ; @param (vectors in vector) tags
-  ; @param (map) options
-  ; @param (map) state
-  ;
-  ; @return (boolean)
-  [n tags options state]
-  (-> (interpreter-disabled-by n tags options state)))
-
-(defn interpreter-enabled?
-  ; @ignore
-  ;
-  ; @description
-  ; Returns TRUE if the interpreter is NOT disabled by an opened tag.
-  ;
-  ; @param (string) n
-  ; @param (vectors in vector) tags
-  ; @param (map) options
-  ; @param (map) state
-  ;
-  ; @return (boolean)
-  [n tags options state]
-  (-> (interpreter-disabled-by n tags options state) not))
-
 (defn reading-any-opening-match?
   ; @ignore
   ;
   ; @description
-  ; Returns TRUE if any opening pattern's last found match is already started but not ended yet at the actual cursor position.
+  ; Returns TRUE if the last found opening pattern match is already started but not ended yet at the actual cursor position.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -468,7 +419,7 @@
   ; @ignore
   ;
   ; @description
-  ; Returns TRUE if any closing pattern's last found match is already started but not ended yet at the actual cursor position.
+  ; Returns TRUE if the last found closing pattern match is already started but not ended yet at the actual cursor position.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -492,18 +443,6 @@
   [n tags options state]
   (or (reading-any-opening-match? n tags options state)
       (reading-any-closing-match? n tags options state)))
-
-(defn not-reading-any-match?
-  ; @ignore
-  ;
-  ; @param (string) n
-  ; @param (vectors in vector) tags
-  ; @param (map) options
-  ; @param (map) state
-  ;
-  ; @return (boolean)
-  [n tags options state]
-  (-> (reading-any-match? n tags options state) not))
 
 ;; -- Regex functions ---------------------------------------------------------
 ;; ----------------------------------------------------------------------------
@@ -689,6 +628,41 @@
                   (letfn [(f0 [accepted-parent] (tag-parent? n tags options state accepted-parent))]
                          (vector/any-item-matches? accepted-parents f0)))))
 
+(defn tag-not-allowed-by-any-ancestor?
+  ; @ignore
+  ;
+  ; @description
+  ; Returns TRUE if the any ancestor tag has ':accepted-descendant' vector that doesn't contain the given tag's name.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; @param (vector) tag-details
+  ;
+  ; @return (boolean)
+  [n tags options state tag-details]
+  (-> false))
+
+(defn tag-not-allowed-by-parent?
+  ; @ignore
+  ;
+  ; @description
+  ; Returns TRUE if the actual parent tag has ':accepted-children' vector and it doesn't contain the given tag's name.
+  ;
+  ; @param (string) n
+  ; @param (vectors in vector) tags
+  ; @param (map) options
+  ; @param (map) state
+  ; @param (vector) tag-details
+  ;
+  ; @return (boolean)
+  [n tags options state [tag-name & _ :as tag-details]]
+  (if-let [parent-tag (parent-tag n tags options state)]
+          (if-let [tag-options (tag-options n tags options state (:name parent-tag))]
+                  (when-let [accepted-children (:accepted-children tag-options)]
+                            (vector/not-contains-item? accepted-children tag-name)))))
+
 (defn tag-ancestor-requirements-met?
   ; @ignore
   ;
@@ -703,7 +677,8 @@
   ;
   ; @return (boolean)
   [n tags options state tag-details]
-  (and (or (-> (tag-requires-no-ancestors?        n tags options state tag-details) not)
+  (and     (-> (tag-not-allowed-by-any-ancestor?  n tags options state tag-details) not)
+       (or (-> (tag-requires-no-ancestors?        n tags options state tag-details) not)
            (-> (no-tags-opened?                   n tags options state)))
        (or (-> (tag-requires-accepted-ancestor?   n tags options state tag-details) not)
            (-> (tag-any-accepted-ancestor-opened? n tags options state tag-details)))))
@@ -722,7 +697,8 @@
   ;
   ; @return (boolean)
   [n tags options state tag-details]
-  (and (or (-> (tag-requires-no-parents?        n tags options state tag-details) not)
+  (and     (-> (tag-not-allowed-by-parent?      n tags options state tag-details) not)
+       (or (-> (tag-requires-no-parents?        n tags options state tag-details) not)
            (-> (no-tags-opened?                 n tags options state)))
        (or (-> (tag-requires-accepted-parent?   n tags options state tag-details) not)
            (-> (tag-any-accepted-parent-opened? n tags options state tag-details)))))
@@ -923,13 +899,13 @@
   ; {:match (integer)
   ;  :name (keyword)}
   [n tags options state]
-  (letfn [(f0 [tag-details] (if-let [opening-match (opening-match n tags options state tag-details)]
-                                    (and (tag-ancestor-requirements-met? n tags options state tag-details)
-                                         (tag-parent-requirements-met?   n tags options state tag-details)
-                                         (tag-not-closes-instead?        n tags options state tag-details)
-                                         (-> opening-match))))]
-         (and (interpreter-enabled?   n tags options state)
-              (not-reading-any-match? n tags options state)
+  (letfn [(f0 [tag-details]
+              (if-let [opening-match (opening-match n tags options state tag-details)]
+                      (and (tag-ancestor-requirements-met? n tags options state tag-details)
+                           (tag-parent-requirements-met?   n tags options state tag-details)
+                           (tag-not-closes-instead?        n tags options state tag-details)
+                           (-> opening-match))))]
+         (and (-> (reading-any-match? n tags options state) not)
               (some f0 tags))))
 
 (defn check-for-closing-match
@@ -947,7 +923,7 @@
   ; {:match (integer)
   ;  :name (keyword)}
   [n tags options state]
-  (and (not-reading-any-match? n tags options state)
+  (and (-> (reading-any-match? n tags options state) not)
        (if-let [parent-tag (parent-tag n tags options state)]
                (letfn [(f0 [[tag-name & _]] (= tag-name (:name parent-tag)))]
                       (let [tag-details (vector/last-match tags f0)]
