@@ -13,51 +13,6 @@
   ; - The provided state contains the 'actual-tags' vector that describes the opened tags at the actual position
   ;   and contains the 'left-tags' map that contains tags that are already ended before the actual position and
   ;   removed from the 'actual-tags' vector.
-  ; - Available metafunctions within the applied 'f' function:
-  ;   Ancestor / parent tag metafunctions:
-  ;   - (ancestor-tags)
-  ;   - (depth)
-  ;   - (left-sibling-count)
-  ;   - (no-tags-opened?)
-  ;   - (parent-tag)
-  ;   - (tag-ancestor? :my-tag)
-  ;   - (tag-depth     :my-tag)
-  ;   - (tag-parent?   :my-tag)
-  ;   Interpreter metafunctions:
-  ;   - (interpreter-disabled-by)
-  ;   - (interpreter-disabled?)
-  ;   - (interpreter-enabled?)
-  ;   - (reading-any-closing-match?)
-  ;   - (reading-any-opening-match?)
-  ;   Operator metafunctions:
-  ;   - (use-metadata "My metadata" "My result")
-  ;   - (stop "My result")
-  ;   Tag boundary metafunctions:
-  ;   - (closing-tag)
-  ;   - (ending-tag)
-  ;   - (opening-tag)
-  ;   - (starting-tag)
-  ;   - (tag-closed-at  :my-tag)
-  ;   - (tag-closed?    :my-tag)
-  ;   - (tag-closes?    :my-tag)
-  ;   - (tag-ends?      :my-tag)
-  ;   - (tag-opened-at  :my-tag)
-  ;   - (tag-opened?    :my-tag)
-  ;   - (tag-opens?     :my-tag)
-  ;   - (tag-started-at :my-tag)
-  ;   - (tag-started?   :my-tag)
-  ;   - (tag-starts?    :my-tag)
-  ;   Tag body / content metafunctions:
-  ;   - (tag-body    :my-tag)
-  ;   - (tag-content :my-tag)
-  ;   Tag history metafunctions:
-  ;   - (tag-left-count :my-tag)
-  ;   - (tag-met-count  :my-tag)
-  ;   Tag details metafunctions:
-  ;   - (tag-details         :my-tag)
-  ;   - (tag-opening-pattern :my-tag)
-  ;   - (tag-closing-pattern :my-tag)
-  ;   - (tag-options         :my-tag)
   ;
   ; @param (string) n
   ; @param (function) f

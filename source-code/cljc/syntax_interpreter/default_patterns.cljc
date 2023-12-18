@@ -20,9 +20,22 @@
 ;    (map)(opt) options]}
 ;
 ; @usage
-; (interpreter "..." (fn [_ _ _] ...) nil [(:list   CLJ-PATTERNS)
-;                                          (:map    CLJ-PATTERNS)
-;                                          (:vector CLJ-PATTERNS)])
+; (interpreter "..." (fn [_ _ _] ...) nil [(:boolean           CLJ-PATTERNS)
+;                                          (:comment           CLJ-PATTERNS)
+;                                          (:conditional-form  CLJ-PATTERNS)
+;                                          (:derefed-symbol    CLJ-PATTERNS)
+;                                          (:keyword           CLJ-PATTERNS)
+;                                          (:list              CLJ-PATTERNS)
+;                                          (:map               CLJ-PATTERNS)
+;                                          (:meta-map          CLJ-PATTERNS)
+;                                          (:meta-string       CLJ-PATTERNS)
+;                                          (:meta-symbol       CLJ-PATTERNS)
+;                                          (:regex-pattern     CLJ-PATTERNS)
+;                                          (:string            CLJ-PATTERNS)
+;                                          (:symbol            CLJ-PATTERNS)
+;                                          (:unresolved-symbol CLJ-PATTERNS)
+;                                          (:var               CLJ-PATTERNS)
+;                                          (:vector            CLJ-PATTERNS)])
 (def CLJ-PATTERNS
      {:symbol            [:symbol            #"[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])"     {:pattern-limits {:lookahead 1}}]
       :meta-symbol       [:meta-symbol       #"\^[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']{0,}(?=[\s\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookahead 1}}]
