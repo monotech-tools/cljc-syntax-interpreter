@@ -3,7 +3,7 @@
 
 ### Overview
 
-The <strong>cljc-syntax-interpreter</strong> is a simple Clojure/ClojureScript syntax interpreter library.
+The <strong>cljc-syntax-interpreter</strong> is a simple syntax interpreter library for Clojure projects.
 
 ### deps.edn
 
