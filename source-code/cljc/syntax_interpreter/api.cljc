@@ -38,7 +38,9 @@
 ;  :paren-ends-at   [18 19]}
 ; @---
 
-; @tutorial How to use a metafunction?
+
+
+; @tutorial How to use metafunctions?
 ;
 ; @code
 ; (interpreter "..."
@@ -50,6 +52,8 @@
 ;              nil
 ;              [[:my-tag #"..."]])
 ; @---
+
+
 
 ; @tutorial Provided metafunctions
 ;
