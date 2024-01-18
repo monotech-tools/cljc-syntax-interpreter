@@ -571,7 +571,7 @@
   ; @return (boolean)
   [n tags options state tag-details]
   (if-let [tag-options (tag-details->options tag-details)]
-          (-> tag-options :accepted-ancestors vector/nonempty?)))
+          (-> tag-options :accepted-ancestors vector/not-empty?)))
 
 (defn tag-requires-accepted-parent?
   ; @ignore
@@ -588,7 +588,7 @@
   ; @return (boolean)
   [n tags options state tag-details]
   (if-let [tag-options (tag-details->options tag-details)]
-          (-> tag-options :accepted-parents vector/nonempty?)))
+          (-> tag-options :accepted-parents vector/not-empty?)))
 
 (defn tag-any-accepted-ancestor-opened?
   ; @ignore

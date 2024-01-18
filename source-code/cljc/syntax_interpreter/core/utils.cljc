@@ -1,8 +1,8 @@
 
 (ns syntax-interpreter.core.utils
-    (:require [fruits.map.api :as map]
-              [fruits.vector.api :as vector]
-              [fruits.regex.api :as regex]))
+    (:require [fruits.map.api    :as map]
+              [fruits.regex.api  :as regex]
+              [fruits.vector.api :as vector]))
 
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------

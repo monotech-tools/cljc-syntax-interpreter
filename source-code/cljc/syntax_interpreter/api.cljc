@@ -1,8 +1,8 @@
 
 (ns syntax-interpreter.api
-    (:require [syntax-interpreter.default-patterns   :as default-patterns]
-              [syntax-interpreter.interpreter.engine :as interpreter.engine]
-              [syntax-interpreter.core.utils :as core.utils]))
+    (:require [syntax-interpreter.core.utils         :as core.utils]
+              [syntax-interpreter.default-patterns   :as default-patterns]
+              [syntax-interpreter.interpreter.engine :as interpreter.engine]))
 
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
