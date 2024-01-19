@@ -768,7 +768,7 @@
   ; @return (map)
   [n tags options {:keys [cursor] :as state} {:keys [match name]}]
   ; The ':child-met' value helps determine how many children of the actual parent tag have been reached by the interpreter at the actual cursor position.
-  ; The ':left-tags' map contains that information as well but its highly performance heavy to derive in case the interpreted string is extremly long (over 100k char)
+  ; The ':left-tags' map contains that information as well but its highly performance heavy to derive in case the interpreted string is extremly long (over 100k char),
   ; and full of tags.
   (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
               ; Tags that are already opened and aren't closed yet:
@@ -873,11 +873,13 @@
   ; @return (map)
   [_ _ _ {:keys [actual-tags left-tags] :as state}]
   (letfn [(f0 [a b] (> (:started-at a) (:started-at b)))]
-         (if-let [ending-tag-dex (vector/last-dex-by actual-tags :ends-at)]
-                 (let [ended-tag        (-> actual-tags (nth ending-tag-dex) (map/move :ends-at :ended-at))
-                       ended-tag-name   (-> ended-tag :name)
-                       ended-tag-bounds (-> ended-tag (dissoc :name))]
-                      (if-let [insert-dex (vector/first-dex-by left-tags #(f0 % ended-tag))]
+         (if-let [ending-tag-dex (vector/last-dex-by actual-tags :ends-at)]           ; <- Index of the tag that ends at the actual cursor position (if any).
+                 (let [ended-tag         (-> actual-tags (nth ending-tag-dex))        ; <- The tag that ends at the actual cursor position.
+                       ended-tag         (-> ended-tag (map/move :ends-at :ended-at)) ; <- Actualizing the ending tag.
+                       ended-tag-name    (-> ended-tag :name)                         ; <- Name of the ending tag.
+                       ended-tag-bounds  (-> ended-tag (dissoc :name))                ; <- The boundary data of the ending tag without the tag name.
+                       ended-tag-history (-> left-tags ended-tag-name)]               ; <- Vector of former instances of the ending tag.
+                      (if-let [insert-dex (vector/first-dex-by ended-tag-history #(f0 % ended-tag))]
                               (-> state (update-in [:actual-tags]              vector/remove-nth-item ending-tag-dex)
                                         (update-in [:left-tags ended-tag-name] vector/insert-item insert-dex ended-tag-bounds))
                               (-> state (update-in [:actual-tags]              vector/remove-nth-item ending-tag-dex)
