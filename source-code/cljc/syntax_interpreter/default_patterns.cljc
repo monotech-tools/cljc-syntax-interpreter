@@ -9,8 +9,11 @@
 ; and help create more accurate matches for tag patterns with lookaround assertions.
 ;
 ; @note
-; Strings and regex patterns can include escaped quote characters. Therefore, their
-; closing pattern must exclude escape characters that precede the closing quote character.
+; Strings and regex patterns can include escaped quote characters.
+; Therefore, their closing pattern must exclude escape characters that precede the closing quote character.
+;
+; @description
+; Default tag patterns for processing Clojure source codes.
 ;
 ; @constant (vectors in map)
 ; {:tag-name (vector)
@@ -20,22 +23,25 @@
 ;    (map)(opt) options]}
 ;
 ; @usage
-; (interpreter "..." (fn [_ _ _] ...) nil [(:boolean           CLJ-PATTERNS)
-;                                          (:comment           CLJ-PATTERNS)
-;                                          (:conditional-form  CLJ-PATTERNS)
-;                                          (:derefed-symbol    CLJ-PATTERNS)
-;                                          (:keyword           CLJ-PATTERNS)
-;                                          (:list              CLJ-PATTERNS)
-;                                          (:map               CLJ-PATTERNS)
-;                                          (:meta-map          CLJ-PATTERNS)
-;                                          (:meta-string       CLJ-PATTERNS)
-;                                          (:meta-symbol       CLJ-PATTERNS)
-;                                          (:regex-pattern     CLJ-PATTERNS)
-;                                          (:string            CLJ-PATTERNS)
-;                                          (:symbol            CLJ-PATTERNS)
-;                                          (:unresolved-symbol CLJ-PATTERNS)
-;                                          (:var               CLJ-PATTERNS)
-;                                          (:vector            CLJ-PATTERNS)])
+; (interpreter "(ns my-namespace ...) (defn my-function [_] ...) ..." 
+;              (fn [_ _ _] ...)
+;              nil
+;              [(:boolean           CLJ-PATTERNS)
+;               (:comment           CLJ-PATTERNS)
+;               (:conditional-form  CLJ-PATTERNS)
+;               (:derefed-symbol    CLJ-PATTERNS)
+;               (:keyword           CLJ-PATTERNS)
+;               (:list              CLJ-PATTERNS)
+;               (:map               CLJ-PATTERNS)
+;               (:meta-map          CLJ-PATTERNS)
+;               (:meta-string       CLJ-PATTERNS)
+;               (:meta-symbol       CLJ-PATTERNS)
+;               (:regex-pattern     CLJ-PATTERNS)
+;               (:string            CLJ-PATTERNS)
+;               (:symbol            CLJ-PATTERNS)
+;               (:unresolved-symbol CLJ-PATTERNS)
+;               (:var               CLJ-PATTERNS)
+;               (:vector            CLJ-PATTERNS)])
 (def CLJ-PATTERNS
      {:symbol            [:symbol            #"[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']*(?=[\s\[\]\(\)\{\}\"\@\~])"     {:pattern-limits {:lookahead 1}}]
       :meta-symbol       [:meta-symbol       #"\^[a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&][a-zA-Z\d\+\-\_\<\>\=\*\!\?\%\&\/\#\:\.\']*(?=[\s\[\]\(\)\{\}\"\@\~])"   {:pattern-limits {:lookahead 1}}]
@@ -59,6 +65,9 @@
 ; Lookbehind, lookahead and match length limits help decrease the processing time,
 ; and help create more accurate matches for tag patterns with lookaround assertions.
 ;
+; @description
+; Default tag patterns for processing CSS contents.
+;
 ; @constant (vectors in map)
 ; {:tag-name (vector)
 ;   [(keyword) tag-name
@@ -67,9 +76,12 @@
 ;    (map)(opt) options]}
 ;
 ; @usage
-; (interpreter "..." (fn [_ _ _] ...) nil [(:class CSS-PATTERNS)
-;                                          (:id    CSS-PATTERNS)
-;                                          (:tag   CSS-PATTERNS)])
+; (interpreter "#my-id {background-color: red} ..."
+;              (fn [_ _ _] ...)
+;              nil
+;              [(:class CSS-PATTERNS)
+;               (:id    CSS-PATTERNS)
+;               (:tag   CSS-PATTERNS)])
 (def CSS-PATTERNS
      {:class [:class #"(?<=[\s\}\]\)\*\~\>\+a-zA-Z\d\_\-])\.[a-zA-Z\d\_][a-zA-Z\d\_\-]*(?<=[\s\{\[\*\~\>\:\.\#])" {:pattern-limits {:lookbehind 1 :lookahead 1}}]
       :id    [:id    #"(?<=[\s\}\]\)\*\~\>\+a-zA-Z\d\_\-])\#[a-zA-Z\d\_][a-zA-Z\d\_\-]*(?<=[\s\{\[\*\~\>\:\.\#])" {:pattern-limits {:lookbehind 1 :lookahead 1}}]

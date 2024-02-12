@@ -9,12 +9,11 @@
 
 ; @tutorial How to use the interpreter?
 ;
-; The [syntax-interpreter.api/interpreter](#interpreter) function applies  the given 'f' function at each cursor position
-; of the given 'n' string.
+; The [interpreter](#interpreter) function applies  the given 'f' function at each cursor position of the given 'n' string.
 ;
 ; It provides a state of the actual position and a set of metafunctions for the applied function.
 ;
-; @code
+; @usage
 ; (interpreter ; Processed string:
 ;              "abcdef (ghijkl ())"
 ;
@@ -36,13 +35,13 @@
 ;  :paren-opens-at  [ 8 17]
 ;  :paren-closes-at [17 18]
 ;  :paren-ends-at   [18 19]}
-; @---
 
-
+;; ----------------------------------------------------------------------------
+;; ----------------------------------------------------------------------------
 
 ; @tutorial How to use metafunctions?
 ;
-; @code
+; @usage
 ; (interpreter "..."
 ;              (fn [_ _ {:keys [tag-opened?] :as metafunctions}]
 ;                  ; A)
@@ -51,15 +50,13 @@
 ;                  ((:tag-opened? metafunctions) :my-tag))
 ;              nil
 ;              [[:my-tag #"..."]])
-; @---
 
-
+;; ----------------------------------------------------------------------------
+;; ----------------------------------------------------------------------------
 
 ; @tutorial Provided metafunctions
 ;
-; Ancestor / parent tag metafunctions:
-;
-; @code
+; @usage Ancestor / parent tag metafunctions:
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
 ;                  ((:ancestor-tags   metafunctions))
@@ -72,9 +69,9 @@
 ;              nil
 ;              [[:my-tag #"..."]])
 ;
-; Interpreter metafunctions:
 ;
-; @code
+;
+; @usage Interpreter metafunctions:
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
 ;                  ((:reading-any-closing-match? metafunctions))
@@ -83,9 +80,9 @@
 ;              nil
 ;              [[:my-tag #"..."]])
 ;
-; Operator metafunctions:
 ;
-; @code
+;
+; @usage Operator metafunctions:
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
 ;                  ; The "My metadata" string will be available in the actual state from the next cursor position.
@@ -95,9 +92,9 @@
 ;              nil
 ;              [[:my-tag #"..."]])
 ;
-; Tag boundary metafunctions:
 ;
-; @code
+;
+; @usage Tag boundary metafunctions:
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
 ;                  ((:closing-tag    metafunctions))
@@ -117,9 +114,9 @@
 ;              nil
 ;              [[:my-tag #"..."]])
 ;
-; Tag body / content metafunctions:
 ;
-; @code
+;
+; @usage Tag body / content metafunctions:
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
 ;                  ((:tag-body    metafunctions) :my-tag)
@@ -127,9 +124,9 @@
 ;              nil
 ;              [[:my-tag #"..."]])
 ;
-; Tag history metafunctions:
 ;
-; @code
+;
+; @usage Tag history metafunctions:
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
 ;                  ((:tag-left-count metafunctions) :my-tag)
@@ -137,9 +134,9 @@
 ;              nil
 ;              [[:my-tag #"..."]])
 ;
-; Tag details metafunctions:
 ;
-; @code
+;
+; @usage Tag details metafunctions:
 ; (interpreter "..."
 ;              (fn [_ _ metafunctions]
 ;                  ((:tag-details         metafunctions) :my-tag)
@@ -152,7 +149,7 @@
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
 
-; @redirect (syntax-interpreter.interpreter.core.utils/*)
+; @redirect (syntax-interpreter.core.utils/*)
 (def with-options core.utils/with-options)
 
 ; @redirect (syntax-interpreter.default-patterns/*)
