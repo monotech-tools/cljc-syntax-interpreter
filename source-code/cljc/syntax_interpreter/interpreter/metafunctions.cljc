@@ -270,7 +270,7 @@
   ; @return (function)
   [_ _ _ _]
   ; @description
-  ; Associates the given 'metadata' value into the 'state' map before the next iteration.
+  ; Associates the given 'metadata' value to the 'state' map before the next iteration.
   ;
   ; @param (*) metadata
   ; @param (*) result
