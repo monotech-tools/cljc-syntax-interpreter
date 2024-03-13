@@ -87,7 +87,7 @@
 ;              (fn [_ _ metafunctions]
 ;                  ; The "My metadata" string will be available in the actual state from the next cursor position.
 ;                  ((:use-metadata metafunctions) "My metadata" "My result")
-;                  ; Immediatelly stops the interpreter at the actual cursor position.
+;                  ; Immediately stops the interpreter at the actual cursor position.
 ;                  ((:stop metafunctions) "My result")
 ;              nil
 ;              [[:my-tag #"..."]])

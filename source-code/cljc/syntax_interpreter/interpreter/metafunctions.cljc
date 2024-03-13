@@ -244,7 +244,7 @@
   ; @return (function)
   [_ _ _ _]
   ; @description
-  ; Stops the interpreter immediatelly and the interpreter returns the parameter of this ('stop') function.
+  ; Stops the interpreter immediately and the interpreter returns the parameter of this ('stop') function.
   ;
   ; @param (*) result
   ;
