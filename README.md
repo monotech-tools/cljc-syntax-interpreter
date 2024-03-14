@@ -16,10 +16,10 @@ The <strong>cljc-syntax-interpreter</strong> is a simple syntax interpreter libr
 
 Check out the latest commit on the [release branch](https://github.com/mt-devtools/cljc-syntax-interpreter/tree/release).
 
-### Documentation
-
-The <strong>cljc-syntax-interpreter</strong> functional documentation is [available here](https://mt-devtools.github.io/cljc-syntax-interpreter).
-
 ### Changelog
 
 You can track the changes of the <strong>cljc-syntax-interpreter</strong> library [here](CHANGES.md).
+
+# Documentation
+
+The <strong>cljc-syntax-interpreter</strong> functional documentation is [available here](https://mt-devtools.github.io/cljc-syntax-interpreter).

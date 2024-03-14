@@ -142,7 +142,7 @@
   ; @ignore
   ;
   ; @description
-  ; Returns TRUE if the given tag doesn't have a closing pattern (omittag).
+  ; Returns TRUE if the given tag does not have a closing pattern (omittag).
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -190,7 +190,7 @@
   ; @return (integer)
   [_ _ _ {:keys [actual-tags]}]
   (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
-              ; Tags that are already opened and aren't closed yet:
+              ; Tags that are already opened and have not closed yet:
               (and (or opens-at opened-at) (not closed-at)))]
          (vector/match-count actual-tags f0)))
 
@@ -210,7 +210,7 @@
   ; @return (integer)
   [_ _ _ {:keys [actual-tags]} tag-name]
   (letfn [(f0 [{:keys [closed-at name opened-at opens-at]}]
-              ; Tags with a specific tag name that are already opened and aren't closed yet:
+              ; Tags with a specific tag name that are already opened and have not closed yet:
               (and (= name tag-name) (or opens-at opened-at) (not closed-at)))]
          (vector/match-count actual-tags f0)))
 
@@ -229,7 +229,7 @@
   ; @return (maps in vector)
   [_ _ _ {:keys [actual-tags]}]
   (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
-              ; Tags that are already opened and aren't closed yet:
+              ; Tags that are already opened and have not closed yet:
               (and (or opens-at opened-at) (not closed-at)))]
          (vector/keep-items-by actual-tags f0)))
 
@@ -248,7 +248,7 @@
   ; @return (map)
   [_ _ _ {:keys [actual-tags]}]
   (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
-              ; Tags that are already opened and aren't closed yet:
+              ; Tags that are already opened and have not closed yet:
               (and (or opens-at opened-at) (not closed-at)))]
          (vector/last-match actual-tags f0)))
 
@@ -267,7 +267,7 @@
   ; @return (integer)
   [_ _ _ {:keys [actual-tags]} tag-name]
   (letfn [(f0 [{:keys [closed-at name opened-at opens-at]}]
-              ; Tags with a specific tag name that are already opened and aren't closed yet:
+              ; Tags with a specific tag name that are already opened and have not closed yet:
               (and (= name tag-name) (or opens-at opened-at) (not closed-at)))]
          (vector/any-item-matches? actual-tags f0)))
 
@@ -632,7 +632,7 @@
   ; @ignore
   ;
   ; @description
-  ; Returns TRUE if the any ancestor tag has ':accepted-descendant' vector that doesn't contain the given tag's name.
+  ; Returns TRUE if the any ancestor tag has ':accepted-descendant' vector that does not contain the given tag's name.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -648,7 +648,7 @@
   ; @ignore
   ;
   ; @description
-  ; Returns TRUE if the actual parent tag has ':accepted-children' vector and it doesn't contain the given tag's name.
+  ; Returns TRUE if the actual parent tag has ':accepted-children' vector and it does not contain the given tag's name.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -771,7 +771,7 @@
   ; The ':left-tags' map contains that information as well but its highly performance heavy to derive in case the interpreted string is extremly long (over 100k char),
   ; and full of tags.
   (letfn [(f0 [{:keys [closed-at opened-at opens-at]}]
-              ; Tags that are already opened and aren't closed yet:
+              ; Tags that are already opened and have not closed yet:
               (and (or opens-at opened-at) (not closed-at)))]
          (if (tag-omittag? n tags options state name)
              (-> state (update :actual-tags vector/conj-item {:name name :starts-at cursor :will-end-at  (+ cursor (count match))})
