@@ -451,7 +451,7 @@
   ; @ignore
   ;
   ; @description
-  ; Returns the the tag name and the found match if the given tag's opening match starts at the actual cursor position.
+  ; Returns the tag name and the found match if the given tag's opening match starts at the actual cursor position.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -487,7 +487,7 @@
   ; @ignore
   ;
   ; @description
-  ; Returns the the tag name and the found match if the given tag's closing match starts at the actual cursor position.
+  ; Returns the tag name and the found match if the given tag's closing match starts at the actual cursor position.
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
@@ -613,7 +613,7 @@
   ; @ignore
   ;
   ; @description
-  ; Returns TRUE if at least one of the accepted parent tags of the given tag is opened (as the the actual parent tag).
+  ; Returns TRUE if at least one of the accepted parent tags of the given tag is opened (as the actual parent tag).
   ;
   ; @param (string) n
   ; @param (vectors in vector) tags
