@@ -3,7 +3,7 @@
 
 ;; ----------------------------------------------------------------------------
 ;; ----------------------------------------------------------------------------
-
+ 
 (defn position-escaped?
   ; @description
   ; Returns whether a specific cursor position in the given 'n' string is preceded by an escape character.
